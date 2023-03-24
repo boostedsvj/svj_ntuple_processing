@@ -276,6 +276,15 @@ def calculate_mt(pt, eta, phi, e, met, metphi):
     mt = np.sqrt( (transverse_e + met)**2 - (jet_x + met_x)**2 - (jet_y + met_y)**2 )
     return mt
 
+
+def vetoPhiSpike(etaSub,phiSub,rad,eta,phi):
+    veto = True
+    for iep in range(len(etaSub)):
+        if (etaSub[iep] - eta)**2 + (phiSub[iep] - phi)**2 < rad:
+            veto = False
+            break
+    return veto
+
 def cr_filter_preselection(array):
     copy = array.copy()
     a = copy.array
@@ -306,9 +315,9 @@ def cr_filter_preselection(array):
     cutflow['ak15j2_eta<2.4'] = len(a)
 
     # leading and subleading ak4 eta < 2.4 --> deadcells study
-    a = a[a['Jets.fCoordinates.fEta'][:,0]<2.4]
-    a = a[a['Jets.fCoordinates.fEta'][:,1]<2.4]
-    cutflow['ak4j1j2_eta<2.4'] = len(a)
+    #a = a[a['Jets.fCoordinates.fEta'][:,0]<2.4]
+    #a = a[a['Jets.fCoordinates.fEta'][:,1]<2.4]
+    #cutflow['ak4j1j2_eta<2.4'] = len(a)
 
 
     # lepton vetoes
@@ -363,7 +372,7 @@ def filter_preselection(array):
     cutflow['n_ak4jets>=2'] = len(a)
 
     # subleading eta < 2.4 eta
-    a = a[a['JetsAK15.fCoordinates.fEta'][:,1]<2.4]
+    a = a[abs(a['JetsAK15.fCoordinates.fEta'][:,1])<2.4]
     cutflow['subl_eta<2.4'] = len(a)
 
     # positive ECF values
@@ -395,7 +404,31 @@ def filter_preselection(array):
         'globalSuperTightHalo2016Filter',
         ]:
         a = a[a[b]!=0] # Pass events if not 0, is that correct?
+
     cutflow['metfilter'] = len(a)
+
+    # ecaldeadcells 2018 remove 5sigma
+    dataqcd_eta_ecaldead={}
+    dataqcd_phi_ecaldead={}
+
+    dataqcd_eta_ecaldead['run2018'] = np.array([-1.632, -0.768, -2.112, -1.632, -0.384,  0.864, -1.536,  1.056,
+         1.44 , -2.016,  1.824, -2.4  , -1.44 , -0.192, -0.864, -1.536,
+         0.   , -1.248,  1.152, -0.288, -2.304,  1.632,  1.728, -2.4  ,
+        -0.768,  1.248,  0.96 , -1.728, -0.192, -2.304, -0.096,  1.536,
+        -2.208,  0.096,  0.864, -0.96 , -0.576,  1.728, -1.248])
+    dataqcd_phi_ecaldead['run2018'] = np.array([0.503, -0.754, -2.513,  0.628,  0.126,  2.765, -3.142, -3.142,
+        -0.251, -2.513, -2.136, -1.508, -3.142, -2.639, -1.759, -1.257,
+         1.759, -1.257, -0.503,  0.126, -1.508, -0.628, -0.628, -1.634,
+        -2.262, -0.503,  0.628, -0.503,  0.628, -1.634,  0.88 , -1.634,
+        -1.508,  1.759,  1.634,  2.011,  2.639, -2.136,  2.765])
+    
+    v_5s = np.vectorize(lambda eta,phi,rad: vetoPhiSpike(dataqcd_eta_ecaldead['run2018'], dataqcd_phi_ecaldead['run2018'], rad, eta, phi))
+    rad=0.01
+    b = v_5s(a['Jets.fCoordinates.fEta'][:,1], a['Jets.fCoordinates.fPhi'][:,1], rad)
+    a = a[b]
+    #a = a[(a['Jets.fCoordinates.fEta'][:,1] != dataqcd_eta_ecaldead['run2018'][:]) & (a['Jets.fCoordinates.fPhi'][:,1] != dataqcd_phi_ecaldead['run2018'][:])]#exclude dead eta
+    #a = a[a['Jets.fCoordinates.fPhi'][:,1]] != dataqcd_phi_ecaldead['run2018'] #exclude dead phi
+    cutflow['ecaldeadcells'] = len(a)
     cutflow['preselection'] = len(a)
 
 
@@ -429,7 +462,74 @@ def filter_zprime_in_cone(array):
         & (calc_dr(eta_subl, phi_subl, eta_darkquark1, phi_darkquark1)<=1.5)
         & (calc_dr(eta_subl, phi_subl, eta_darkquark2, phi_darkquark2)<=1.5)
         ]
+
     cutflow['zdq<1.5'] = len(a)
+    copy.array = a
+    return copy
+
+
+
+def filter_zprime_not_in_cone(array):
+    copy = array.copy()
+    a, cutflow = copy.array, copy.cutflow
+
+    # at least 1 zprime particle
+    a = a[ak.sum(a['GenParticles_PdgId']==4900023, axis=-1)>=1]
+    # at least 2 dark quarks
+    a = a[ak.sum((np.abs(a['GenParticles_PdgId'])==4900101) & (a['GenParticles_Status']==71), axis=-1)>=2]
+    cutflow['1zprime2darkquarks'] = len(a)
+
+    # Require both dark quarks and the zprime to be within 1.5 cone of the subleading jet
+    eta_subl = a['JetsAK15.fCoordinates.fEta'][:,1].to_numpy()
+    phi_subl = a['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy()
+    eta_zprime = a['GenParticles.fCoordinates.fEta'][a['GenParticles_PdgId']==4900023][:,0].to_numpy()
+    phi_zprime = a['GenParticles.fCoordinates.fPhi'][a['GenParticles_PdgId']==4900023][:,0].to_numpy()
+    select_darkquarks = (np.abs(a['GenParticles_PdgId'])==4900101) & (a['GenParticles_Status']==71)
+    eta_darkquark1 = a['GenParticles.fCoordinates.fEta'][select_darkquarks][:,0].to_numpy()
+    phi_darkquark1 = a['GenParticles.fCoordinates.fPhi'][select_darkquarks][:,0].to_numpy()
+    eta_darkquark2 = a['GenParticles.fCoordinates.fEta'][select_darkquarks][:,1].to_numpy()
+    phi_darkquark2 = a['GenParticles.fCoordinates.fPhi'][select_darkquarks][:,1].to_numpy()
+    a = a[
+        (calc_dr(eta_subl, phi_subl, eta_zprime, phi_zprime)>1.5)
+        & (calc_dr(eta_subl, phi_subl, eta_darkquark1, phi_darkquark1)>1.5)
+        & (calc_dr(eta_subl, phi_subl, eta_darkquark2, phi_darkquark2)>1.5)
+        ]
+
+    cutflow['zdq>1.5'] = len(a)
+    copy.array = a
+    return copy
+
+
+def filter_zprime_half_in_cone(array):
+    copy = array.copy()
+    a, cutflow = copy.array, copy.cutflow
+
+    # at least 1 zprime particle
+    a = a[ak.sum(a['GenParticles_PdgId']==4900023, axis=-1)>=1]
+    # at least 2 dark quarks
+    a = a[ak.sum((np.abs(a['GenParticles_PdgId'])==4900101) & (a['GenParticles_Status']==71), axis=-1)>=2]
+    cutflow['1zprime2darkquarks'] = len(a)
+
+    # Require both dark quarks and the zprime to be within 1.5 cone of the subleading jet
+    eta_subl = a['JetsAK15.fCoordinates.fEta'][:,1].to_numpy()
+    phi_subl = a['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy()
+    eta_zprime = a['GenParticles.fCoordinates.fEta'][a['GenParticles_PdgId']==4900023][:,0].to_numpy()
+    phi_zprime = a['GenParticles.fCoordinates.fPhi'][a['GenParticles_PdgId']==4900023][:,0].to_numpy()
+    select_darkquarks = (np.abs(a['GenParticles_PdgId'])==4900101) & (a['GenParticles_Status']==71)
+    eta_darkquark1 = a['GenParticles.fCoordinates.fEta'][select_darkquarks][:,0].to_numpy()
+    phi_darkquark1 = a['GenParticles.fCoordinates.fPhi'][select_darkquarks][:,0].to_numpy()
+    eta_darkquark2 = a['GenParticles.fCoordinates.fEta'][select_darkquarks][:,1].to_numpy()
+    phi_darkquark2 = a['GenParticles.fCoordinates.fPhi'][select_darkquarks][:,1].to_numpy()
+    a = a[
+        ((calc_dr(eta_subl, phi_subl, eta_zprime, phi_zprime)<=1.5)
+        | (calc_dr(eta_subl, phi_subl, eta_darkquark1, phi_darkquark1)<=1.5)
+        | (calc_dr(eta_subl, phi_subl, eta_darkquark2, phi_darkquark2)<=1.5))
+        & ((calc_dr(eta_subl, phi_subl, eta_zprime, phi_zprime)>1.5)
+        | (calc_dr(eta_subl, phi_subl, eta_darkquark1, phi_darkquark1)>1.5)
+        | (calc_dr(eta_subl, phi_subl, eta_darkquark2, phi_darkquark2)>1.5))
+        ]
+
+    cutflow['half_truth'] = len(a)
     copy.array = a
     return copy
 
