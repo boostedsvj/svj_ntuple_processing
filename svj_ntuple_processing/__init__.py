@@ -247,6 +247,14 @@ def calculate_mt(pt, eta, phi, e, met, metphi):
     return mt
 
 
+def vetoPhiSpike(etaSub,phiSub,rad,eta,phi):
+    veto = True
+    for iep in range(len(etaSub)):
+        if (etaSub[iep] - eta)**2 + (phiSub[iep] - phi)**2 < rad:
+            veto = False
+            break
+    return veto
+
 def cr_filter_preselection(array):
     """
     Preselection for the control region.
@@ -283,12 +291,12 @@ def cr_filter_preselection(array):
     cutflow['n_ak4jets>=2'] = len(a)
 
     # subleading eta < 2.4 eta
-    a = a[a['JetsAK15.fCoordinates.fEta'][:,1]<2.4]
+    a = a[abs(a['JetsAK15.fCoordinates.fEta'][:,1])<2.4]
     cutflow['ak15j2_eta<2.4'] = len(a)
 
     # leading and subleading ak4 eta < 2.4 --> deadcells study
-    a = a[a['Jets.fCoordinates.fEta'][:,0]<2.4]
-    a = a[a['Jets.fCoordinates.fEta'][:,1]<2.4]
+    a = a[abs(a['Jets.fCoordinates.fEta'][:,0])<2.4]
+    a = a[abs(a['Jets.fCoordinates.fEta'][:,1])<2.4]
     cutflow['ak4j1j2_eta<2.4'] = len(a)
 
     # lepton vetoes
@@ -336,7 +344,7 @@ def filter_preselection(array):
     cutflow['n_ak15jets>=2'] = len(a)
 
     # subleading eta < 2.4 eta
-    a = a[a['JetsAK15.fCoordinates.fEta'][:,1]<2.4]
+    a = a[abs(a['JetsAK15.fCoordinates.fEta'][:,1])<2.4]
     cutflow['subl_eta<2.4'] = len(a)
 
     # positive ECF values
@@ -368,6 +376,26 @@ def filter_preselection(array):
         ]:
         a = a[a[b]!=0] # Pass events if not 0, is that correct?
     cutflow['metfilter'] = len(a)
+
+    #EcalDeadCells filter
+    dataqcd_eta_5s = {}
+    dataqcd_phi_5s = {}
+
+    dataqcd_eta_5s['2018'] = np.array([-1.632, -0.768, -2.112, -1.632, -0.384,  0.864, -1.536,  1.056,
+         1.44 , -2.016,  1.824, -2.4  , -1.44 , -0.192, -0.864, -1.536,
+         0.   , -1.248,  1.152, -0.288, -2.304,  1.632,  1.728, -2.4  ,
+        -0.768,  1.248,  0.96 , -1.728, -0.192, -2.304, -0.096,  1.536,
+        -2.208,  0.096,  0.864, -0.96 , -0.576,  1.728, -1.248])
+    dataqcd_phi_5s['2018'] = np.array([ 0.503, -0.754, -2.513,  0.628,  0.126,  2.765, -3.142, -3.142,
+        -0.251, -2.513, -2.136, -1.508, -3.142, -2.639, -1.759, -1.257,
+         1.759, -1.257, -0.503,  0.126, -1.508, -0.628, -0.628, -1.634,
+        -2.262, -0.503,  0.628, -0.503,  0.628, -1.634,  0.88 , -1.634,
+        -1.508,  1.759,  1.634,  2.011,  2.639, -2.136,  2.765])
+    rad = 0.01
+    v_5s = np.vectorize(lambda eta,phi,rad: vetoPhiSpike(dataqcd_eta_5s['2018'], dataqcd_phi_5s['2018'], rad, eta, phi))
+    b = v_5s(a['Jets.fCoordinates.fEta'][:,1], a['Jets.fCoordinates.fPhi'][:,1], rad)
+    a = a[b]
+    cutflow['ecaldeadcells'] = len(a)
     cutflow['preselection'] = len(a)
 
     copy.array = a
