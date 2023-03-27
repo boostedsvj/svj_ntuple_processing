@@ -855,7 +855,7 @@ def bdt_feature_columns(array):
     #a['EcalDeadCellTriggerPrimitiveFilter'] = arr['EcalDeadCellTriggerPrimitiveFilter'].to_numpy()
     #a['EcalDeadCellBoundaryEnergyFilter'] = arr['EcalDeadCellBoundaryEnergyFilter'].to_numpy()
     
-    a['ak15_lead_mass'] = calculate_mass(a['leading_pt'], a['leading_e']) 
+    a['ak15_lead_mass'] = calculate_mass(a['leading_pt'], a['leading_eta'], a['leading_e']) 
     a['ak15_subl_mass'] = calculate_mass(a['pt'], a['eta'], a['e'])
     cols.arrays = a
     return cols
