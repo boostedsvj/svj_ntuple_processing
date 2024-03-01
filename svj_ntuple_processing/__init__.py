@@ -1412,7 +1412,7 @@ def bdt_feature_columns(array, load_mc=True, save_scale_weights=False):
 
     #if load_mc: a['weight'] = arr['Weight'].to_numpy() #if 'Weight' in arr else np.ones(len(arr))
     #a['weight'] =np.ones(len(arr))
-    if is_mc: a['weight'] = arr['Weight'].to_numpy()
+    #if is_mc: a['weight'] = arr['Weight'].to_numpy()
     a['met'] = arr['MET'].to_numpy()
     a['metphi'] = arr['METPhi'].to_numpy()
 
