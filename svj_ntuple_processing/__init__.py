@@ -1434,7 +1434,7 @@ def bdt_feature_columns(array, load_mc=True, save_scale_weights=False):
     a['ak15_photon_ef'] = arr['JetsAK15_photonEnergyFraction'][:,1].to_numpy()
 
     a['rho'] = calculate_rho(a['pt'], a['eta'], a['e'])
-    a['girthddt'] = girthddt(a['mt'], a['pt'],a['rho'],a['girth'],a['weight'])
+    #a['girthddt'] = girthddt(a['mt'], a['pt'],a['rho'],a['girth'],a['weight'])
     a['rt'] = np.sqrt(1.+a['met']/a['pt'])
 
     a['leading_pt'] = arr['JetsAK15.fCoordinates.fPt'][:,0].to_numpy()
