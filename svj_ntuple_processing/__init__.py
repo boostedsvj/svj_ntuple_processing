@@ -1390,7 +1390,7 @@ def concat_columns(columns):
     return cols
 
 
-def bdt_feature_columns(array, load_mc=True, save_scale_weights=False):
+def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     """
     Takes an Array object, calculates needed columns for the bdt training.
     """
@@ -1462,7 +1462,8 @@ def bdt_feature_columns(array, load_mc=True, save_scale_weights=False):
     # a['ak8_subl_pt'] = arr['JetsAK8.fCoordinates.fPt'][:,1].to_numpy()
     # a['ak8_subl_phi'] = arr['JetsAK8.fCoordinates.fPhi'][:,1].to_numpy()
     # a['ak8_subl_eta'] = arr['JetsAK8.fCoordinates.fEta'][:,1].to_numpy()
-    a['puweight'] = arr['puWeight'].to_numpy()
+    if load_mc:
+        a['puweight'] = arr['puWeight'].to_numpy()
     a['jetsak15_id'] = arr['JetsAK15_ID'][:,1].to_numpy()
 
     if save_scale_weights:
