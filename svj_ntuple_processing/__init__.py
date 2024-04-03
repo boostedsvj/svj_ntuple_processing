@@ -709,7 +709,7 @@ def filter_preselection(array, single_muon_cr=False):
     return copy
 
 
-def filter_preselection_ordered(array, single_muon_cr=False):
+def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=False):
     """ 
         ordered selection cuts to make cutflowtable
           should be run after the filter_stitch(array) function
@@ -795,21 +795,23 @@ def filter_preselection_ordered(array, single_muon_cr=False):
         a = a[a[b]!=0] # Pass events if not 0, is that correct?
     cutflow['metfilter'] = len(a)
 
-    # At least 2 AK4 jets --> deadcells study
-    a = a[ak.count(a['Jets.fCoordinates.fPt'], axis=-1) >= 2]
-    cutflow['n_ak4jets>=2'] = len(a)
 
-    # Filter out jets that are too close to dead cells
-    ak4jet_eta = a['Jets.fCoordinates.fEta'][:,1].to_numpy()
-    ak4jet_phi = a['Jets.fCoordinates.fPhi'][:,1].to_numpy()
-    dead_cell_mask = veto_phi_spike(
-        dataqcd_eta_ecaldead[array.year], dataqcd_phi_ecaldead[array.year],
-        ak4jet_eta, ak4jet_phi,
-        rad = 0.01
-        )
+    if deadcells_study:
+       # At least 2 AK4 jets --> deadcells study
+       a = a[ak.count(a['Jets.fCoordinates.fPt'], axis=-1) >= 2]
+       cutflow['n_ak4jets>=2'] = len(a)
 
-    a = a[dead_cell_mask]
-    cutflow['ecaldeadcells'] = len(a)
+       # Filter out jets that are too close to dead cells
+       ak4jet_eta = a['Jets.fCoordinates.fEta'][:,1].to_numpy()
+       ak4jet_phi = a['Jets.fCoordinates.fPhi'][:,1].to_numpy()
+       dead_cell_mask = veto_phi_spike(
+           dataqcd_eta_ecaldead[array.year], dataqcd_phi_ecaldead[array.year],
+           ak4jet_eta, ak4jet_phi,
+           rad = 0.01
+           )
+
+       a = a[dead_cell_mask]
+       cutflow['ecaldeadcells'] = len(a)
 
     # abs(metdphi)<1.5
     METDphi = calc_dphi(a['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy(), a['METPhi'].to_numpy())
