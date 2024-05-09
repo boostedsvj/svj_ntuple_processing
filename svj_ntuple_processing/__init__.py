@@ -305,6 +305,10 @@ BRANCHES = [
     'Muons.fCoordinates.fPt', 'Muons.fCoordinates.fEta',
     'Muons.fCoordinates.fPhi', 'Muons.fCoordinates.fE',
     'Muons_iso', 'Muons_mediumID',
+    # more new branches from Kevin 05/06/2024
+    'JetsAK15_nConstituents','JetsAK15_nConstituentsSoftDrop','JetsAK15_jecFactor','JetsAK15_jecUnc','JetsAK15_jerFactor',
+    'JetsAK15_jerFactorDown','JetsAK15_jerFactorUp','JetsAK15JECdown_jerFactor','JetsAK15JECdown_origIndex',
+    'JetsAK15JECup_jerFactor','JetsAK15JECup_origIndex','JetsAK15JERdown_origIndex','JetsAK15JERup_origIndex'
     ]
 
 BRANCHES_HLT = [
@@ -354,18 +358,18 @@ BRANCHES_JERJEC = [
     'JetsAK8_jerFactor',
     'JetsAK8_jerFactorDown',
     'JetsAK8_jerFactorUp',
-    'JetsAK15JECdown_jerFactor',
-    'JetsAK15JECdown_origIndex',
-    'JetsAK15JECup_jerFactor',
-    'JetsAK15JECup_origIndex',
-    'JetsAK15JERdown_origIndex',
-    'JetsAK15JERup_origIndex',
+    #'JetsAK15JECdown_jerFactor',
+    #'JetsAK15JECdown_origIndex',
+    #'JetsAK15JECup_jerFactor',
+    #'JetsAK15JECup_origIndex',
+    #'JetsAK15JERdown_origIndex',
+    #'JetsAK15JERup_origIndex',
     'JetsAK15_origIndex',
-    'JetsAK15_jecFactor',
-    'JetsAK15_jecUnc',
-    'JetsAK15_jerFactor',
-    'JetsAK15_jerFactorDown',
-    'JetsAK15_jerFactorUp',
+    #'JetsAK15_jecFactor',
+    #'JetsAK15_jecUnc',
+    #'JetsAK15_jerFactor',
+    #'JetsAK15_jerFactorDown',
+    #'JetsAK15_jerFactorUp',
     ]
 
 
@@ -402,6 +406,14 @@ def open_root(rootfile, load_gen=True, load_hlt=False, load_jerjec=False):
         #for ttstitch to work
         #'Weight',
         #'madHT', 'GenMET'
+        # all subjet components in ecf computation
+        'JetsAK15_ecfFullC2b1','JetsAK15_ecfFullC2b2','JetsAK15_ecfFullD2b1','JetsAK15_ecfFullD2b2','JetsAK15_ecfFullM2b1',
+        'JetsAK15_ecfFullM2b2','JetsAK15_ecfFullN2b1','JetsAK15_ecfFullN2b2',
+        #more new branches
+        'JetsAK15_nConstituents','JetsAK15_nConstituentsSoftDrop','JetsAK15_jecFactor','JetsAK15_jecUnc','JetsAK15_jerFactor',
+        'JetsAK15_jerFactorDown','JetsAK15_jerFactorUp','JetsAK15JECdown_jerFactor','JetsAK15JECdown_origIndex',
+        'JetsAK15JECup_jerFactor','JetsAK15JECup_origIndex','JetsAK15JERdown_origIndex','JetsAK15JERup_origIndex'
+
         ]
 
     if load_gen:
@@ -503,6 +515,14 @@ def veto_phi_spike(eta_veto, phi_veto, eta_jets, phi_jets, rad=0.01):
     assert veto_mask.shape == (len(eta_jets),)
     return veto_mask
 
+def veto_HEM(eta,phi,pt):
+    """
+    rejects events with AK4 jets eta and phi within the HEM area
+    only for 2018_PostHEM era
+    """
+    hem = lambda eta_jet,phi_jet,pt_jet : ((eta_jet<-1.4) & (eta_jet>-3) & (phi_jet<-0.87) & (phi_jet>-1.57) & (pt>30))
+    hemveto = np.bitwise_not(hem(eta,phi,pt)) 
+    return hemveto
 
 def cr_filter_preselection(array):
     """
@@ -702,6 +722,7 @@ def filter_preselection(array, single_muon_cr=False):
     #a = a[a['JetsAK15_ID'][:,1]>0]
     #cutflow['ak15jets_id'] = len(a)
 
+
     cutflow['preselection'] = len(a)
 
     copy.array = a
@@ -832,6 +853,9 @@ def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=Fal
      )
     a = a[(mt>180) & (mt<650)]
     cutflow['180<mt<650'] = len(a)
+
+    # HEM issue
+     
 
 
     cutflow['ordered_preselection'] = len(a)
@@ -1190,6 +1214,28 @@ def filter_stitch(array):
     copy.cut('stitch')
     return copy
 
+def filter_hemveto(array):
+    """
+    Filter to cut away AK4 jets within HEM area 
+    only applicable for 2018 posthem era
+    """
+    copy = array.copy()
+    a = copy.array
+    
+    eta = a['Jets.fCoordinates.fEta'][:,1].to_numpy()
+    phi = a['Jets.fCoordinates.fPhi'][:,1].to_numpy()
+    pt  = a['Jets.fCoordinates.fPt'][:,1].to_numpy()
+
+    print(array.year)
+
+    a = a[veto_HEM(eta,phi,pt)]
+
+    copy.array = a
+    copy.cut('hem_veto')
+    return copy
+    
+
+
 
 def filter_at_least_one_ak8jet(array):
     return filter_at_least_n_jets(array, n=1, cone=8)
@@ -1407,8 +1453,12 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     a['axismajor'] = arr['JetsAK15_axismajor'][:,1].to_numpy()
     a['axisminor'] = arr['JetsAK15_axisminor'][:,1].to_numpy()
     a['ecfm2b1'] = arr['JetsAK15_ecfM2b1'][:,1].to_numpy()
+    a['ecfm2b2'] = arr['JetsAK15_ecfM2b2'][:,1].to_numpy()
     a['ecfd2b1'] = arr['JetsAK15_ecfD2b1'][:,1].to_numpy()
+    a['ecfd2b2'] = arr['JetsAK15_ecfD2b2'][:,1].to_numpy()
     a['ecfc2b1'] = arr['JetsAK15_ecfC2b1'][:,1].to_numpy()
+    a['ecfc2b2'] = arr['JetsAK15_ecfC2b2'][:,1].to_numpy()
+    a['ecfn2b1'] = arr['JetsAK15_ecfN2b1'][:,1].to_numpy()
     a['ecfn2b2'] = arr['JetsAK15_ecfN2b2'][:,1].to_numpy()
     a['metdphi'] = calc_dphi(arr['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy(), arr['METPhi'].to_numpy())
 
@@ -1497,6 +1547,30 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     a['lead_genjets_phi'] = arr['GenJets.fCoordinates.fPhi'][:,0].to_numpy()
     a['lead_genjets_pt'] = arr['GenJets.fCoordinates.fPt'][:,0].to_numpy()'''
 
+    # add ecf with full jet components
+    a['ecfm2b1full'] = arr['JetsAK15_ecfFullM2b1'][:,1].to_numpy()
+    a['ecfm2b2full'] = arr['JetsAK15_ecfFullM2b2'][:,1].to_numpy()
+    a['ecfn2b1full'] = arr['JetsAK15_ecfFullN2b1'][:,1].to_numpy()
+    a['ecfn2b2full'] = arr['JetsAK15_ecfFullN2b1'][:,1].to_numpy()
+    a['ecfc2b1full'] = arr['JetsAK15_ecfFullC2b1'][:,1].to_numpy()
+    a['ecfc2b2full'] = arr['JetsAK15_ecfFullC2b2'][:,1].to_numpy()
+    a['ecfd2b1full'] = arr['JetsAK15_ecfFullD2b1'][:,1].to_numpy()
+    a['ecfd2b2full'] = arr['JetsAK15_ecfFullD2b2'][:,1].to_numpy() 
+
+    # more branches
+    a['JetsAK15_nConstituents']         = arr['JetsAK15_nConstituents'][:,1].to_numpy()
+    a['JetsAK15_nConstituentsSoftDrop'] = arr['JetsAK15_nConstituentsSoftDrop'][:,1].to_numpy()
+    a['JetsAK15_jecFactor']             = arr['JetsAK15_jecFactor'][:,1].to_numpy()
+    a['JetsAK15_jecUnc']                = arr['JetsAK15_jecUnc'][:,1].to_numpy()
+    a['JetsAK15_jerFactor']             = arr['JetsAK15_jerFactor'][:,1].to_numpy()
+    a['JetsAK15_jerFactorDown']         = arr['JetsAK15_jerFactorDown'][:,1].to_numpy()
+    a['JetsAK15_jerFactorUp']           = arr['JetsAK15_jerFactorUp'][:,1].to_numpy()
+    a['JetsAK15JECdown_jerFactor']      = arr['JetsAK15JECdown_jerFactor'][:,1].to_numpy()
+    a['JetsAK15JECdown_origIndex']      = arr['JetsAK15JECdown_origIndex'][:,1].to_numpy()
+    a['JetsAK15JECup_jerFactor']        = arr['JetsAK15JECup_jerFactor'][:,1].to_numpy()
+    a['JetsAK15JECup_origIndex']        = arr['JetsAK15JECup_origIndex'][:,1].to_numpy()
+    a['JetsAK15JERdown_origIndex']      = arr['JetsAK15JERdown_origIndex'][:,1].to_numpy()
+    a['JetsAK15JERup_origIndex']        = arr['JetsAK15JERup_origIndex'][:,1].to_numpy()
 
     cols.arrays = a
     return cols
