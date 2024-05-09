@@ -308,7 +308,10 @@ BRANCHES = [
     # more new branches from Kevin 05/06/2024
     'JetsAK15_nConstituents','JetsAK15_nConstituentsSoftDrop','JetsAK15_jecFactor','JetsAK15_jecUnc','JetsAK15_jerFactor',
     'JetsAK15_jerFactorDown','JetsAK15_jerFactorUp','JetsAK15JECdown_jerFactor','JetsAK15JECdown_origIndex',
-    'JetsAK15JECup_jerFactor','JetsAK15JECup_origIndex','JetsAK15JERdown_origIndex','JetsAK15JERup_origIndex'
+    'JetsAK15JECup_jerFactor','JetsAK15JECup_origIndex','JetsAK15JERdown_origIndex','JetsAK15JERup_origIndex',
+    # new ecf branches
+    'JetsAK15_ecfFullC2b1','JetsAK15_ecfFullC2b2','JetsAK15_ecfFullD2b1','JetsAK15_ecfFullD2b2','JetsAK15_ecfFullM2b1',
+    'JetsAK15_ecfFullM2b2','JetsAK15_ecfFullN2b1','JetsAK15_ecfFullN2b2'
     ]
 
 BRANCHES_HLT = [
