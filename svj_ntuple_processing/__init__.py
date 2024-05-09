@@ -523,7 +523,7 @@ def veto_HEM(eta,phi,pt):
     rejects events with AK4 jets eta and phi within the HEM area
     only for 2018_PostHEM era
     """
-    hem = lambda eta_jet,phi_jet,pt_jet : ((eta_jet<-1.4) & (eta_jet>-3) & (phi_jet<-0.87) & (phi_jet>-1.57) & (pt>30))
+    hem = lambda eta_jet,phi_jet,pt_jet : ((eta_jet<-1.4) & (eta_jet>-3) & (phi_jet<-0.87) & (phi_jet>-1.57) & (pt_jet>30))
     hemveto = np.bitwise_not(hem(eta,phi,pt)) 
     return hemveto
 
