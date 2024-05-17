@@ -1465,7 +1465,7 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     a['ecfn2b2'] = arr['JetsAK15_ecfN2b2'][:,1].to_numpy()
     a['metdphi'] = calc_dphi(arr['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy(), arr['METPhi'].to_numpy())
 
-    #if load_mc: a['weight'] = arr['Weight'].to_numpy() #if 'Weight' in arr else np.ones(len(arr))
+    if load_mc: a['weight'] = arr['Weight'].to_numpy() #if 'Weight' in arr else np.ones(len(arr))
     #a['weight'] =np.ones(len(arr))
     #if is_mc: a['weight'] = arr['Weight'].to_numpy()
     a['met'] = arr['MET'].to_numpy()
@@ -1554,7 +1554,7 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     a['ecfm2b1full'] = arr['JetsAK15_ecfFullM2b1'][:,1].to_numpy()
     a['ecfm2b2full'] = arr['JetsAK15_ecfFullM2b2'][:,1].to_numpy()
     a['ecfn2b1full'] = arr['JetsAK15_ecfFullN2b1'][:,1].to_numpy()
-    a['ecfn2b2full'] = arr['JetsAK15_ecfFullN2b1'][:,1].to_numpy()
+    a['ecfn2b2full'] = arr['JetsAK15_ecfFullN2b2'][:,1].to_numpy()
     a['ecfc2b1full'] = arr['JetsAK15_ecfFullC2b1'][:,1].to_numpy()
     a['ecfc2b2full'] = arr['JetsAK15_ecfFullC2b2'][:,1].to_numpy()
     a['ecfd2b1full'] = arr['JetsAK15_ecfFullD2b1'][:,1].to_numpy()
