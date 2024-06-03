@@ -178,6 +178,9 @@ def metadata_from_path(path):
     match = re.search(r'rinv-(\d\.\d+)', path)
     if match: meta['rinv'] = float(match.group(1))
 
+    match = re.search(r'rinv-(\dp\d+)', path)
+    if match: meta['rinv'] = float(match.group(1).replace('p','.'))
+
     return meta
 
 
