@@ -168,7 +168,7 @@ def metadata_from_path(path):
     if match:
         meta['year'] = int(match.group(1))
 
-    match = re.search(r'UL(\d\d)', fullpath)
+    match = re.search(r'UL(?:20)?(\d\d)', fullpath)
     if match:
         meta['year'] = int('20'+match.group(1))
 
