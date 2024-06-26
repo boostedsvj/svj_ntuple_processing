@@ -124,14 +124,14 @@ dataqcd_phi_ecaldead[2018] = np.array([
     ])
 
 
-dataqcd_eta_ecaldead[2017] = np.array([ 
+dataqcd_eta_ecaldead[2017] = np.array([
         1.344, -1.632, -1.632, -2.112, -0.384,  1.152,  0.864, -1.536,
         1.344,  1.056, -1.152, -2.016, -0.48 ,  1.824, -1.344, -1.44 ,
        -2.4  , -0.192, -0.864,  0.   , -1.248, -0.288, -2.304,  1.632,
        -0.768,  1.248,  0.96 , -1.728, -0.192, -0.096,  0.768,  1.728,
         1.536,  1.44 , -2.208, -2.208,  0.096, -0.96 ,  0.864, -0.576,
         1.728])
-dataqcd_phi_ecaldead[2017] = np.array([ 
+dataqcd_phi_ecaldead[2017] = np.array([
         2.639,  0.503,  0.628, -2.513,  0.126,  0.   ,  2.765, -3.142,
         2.765, -3.142,  0.503, -2.513,  2.639, -2.136, -2.765, -3.142,
        -1.508, -2.639, -1.759,  1.759, -1.257,  0.126, -1.508, -0.628,
@@ -348,7 +348,7 @@ BRANCHES_HLT = [
     ]
 
 BRANCHES_GENONLY = [
-    'Weight', 'puWeight', 
+    'Weight', 'puWeight',
     'madHT', 'GenMET',
     'GenParticles_PdgId',
     'GenParticles_Status',
@@ -391,12 +391,12 @@ BRANCHES_JERJEC = [
     'JetsAK8_jerFactor',
     'JetsAK8_jerFactorDown',
     'JetsAK8_jerFactorUp',
-    #'JetsAK15JECdown_jerFactor',
-    #'JetsAK15JECdown_origIndex',
-    #'JetsAK15JECup_jerFactor',
-    #'JetsAK15JECup_origIndex',
-    #'JetsAK15JERdown_origIndex',
-    #'JetsAK15JERup_origIndex',
+    'JetsAK15JECdown_jerFactor',
+    'JetsAK15JECdown_origIndex',
+    'JetsAK15JECup_jerFactor',
+    'JetsAK15JECup_origIndex',
+    'JetsAK15JERdown_origIndex',
+    'JetsAK15JERup_origIndex',
     'JetsAK15_origIndex',
     'JetsAK15_jecFactor',
     'JetsAK15_jecUnc',
