@@ -36,85 +36,67 @@ def setup_logger(name='svj'):
     return logger
 logger = setup_logger()
 
-UL = True  # Global switch for UL vs PREL
+triggers_per_year = {}
 
-triggers_2018 = {}
-triggers_2018['jetht'] = [
-    # AK8PFJet triggers
-    'HLT_AK8PFJet500_v',
-    'HLT_AK8PFJet550_v',
-    # CaloJet
-    'HLT_CaloJet500_NoJetID_v',
-    'HLT_CaloJet550_NoJetID_v',
-    # PFJet and PFHT
-    'HLT_PFHT1050_v',
-    'HLT_PFJet500_v',
-    'HLT_PFJet550_v',
-    # Trim mass jetpt+HT
-    'HLT_AK8PFHT800_TrimMass50_v',
-    'HLT_AK8PFHT850_TrimMass50_v',
-    'HLT_AK8PFHT900_TrimMass50_v',
-    'HLT_AK8PFJet400_TrimMass30_v',
-    'HLT_AK8PFJet420_TrimMass30_v',
-    # MET triggers
-    'HLT_PFHT500_PFMET100_PFMHT100_IDTight_v',
-    'HLT_PFHT500_PFMET110_PFMHT110_IDTight_v',
-    'HLT_PFHT700_PFMET85_PFMHT85_IDTight_v',
-    'HLT_PFHT700_PFMET95_PFMHT95_IDTight_v',
-    'HLT_PFHT800_PFMET75_PFMHT75_IDTight_v',
-    'HLT_PFHT800_PFMET85_PFMHT85_IDTight_v',
-    ]
-triggers_2018['htmht'] = triggers_2018['jetht'][:]
+triggers_per_year[2018] = {
+    'jetht': [
+        # AK8PFJet triggers
+        'HLT_AK8PFJet500_v',
+        'HLT_AK8PFJet550_v',
+        # CaloJet
+        'HLT_CaloJet500_NoJetID_v',
+        'HLT_CaloJet550_NoJetID_v',
+        # PFJet and PFHT
+        'HLT_PFHT1050_v',
+        'HLT_PFJet500_v',
+        'HLT_PFJet550_v',
+        # Trim mass jetpt+HT
+        'HLT_AK8PFHT800_TrimMass50_v',
+        'HLT_AK8PFHT850_TrimMass50_v',
+        'HLT_AK8PFHT900_TrimMass50_v',
+        'HLT_AK8PFJet400_TrimMass30_v',
+        'HLT_AK8PFJet420_TrimMass30_v',
+    ],
+    'htmht': [
+        # MET triggers
+        'HLT_PFHT500_PFMET100_PFMHT100_IDTight_v',
+        'HLT_PFHT500_PFMET110_PFMHT110_IDTight_v',
+        'HLT_PFHT700_PFMET85_PFMHT85_IDTight_v',
+        'HLT_PFHT700_PFMET95_PFMHT95_IDTight_v',
+        'HLT_PFHT800_PFMET75_PFMHT75_IDTight_v',
+        'HLT_PFHT800_PFMET85_PFMHT85_IDTight_v',
+    ],
+}
 
-triggers_2017 = {}
-triggers_2017['jetht'] = [
-    # AK8PFJet triggers
-    'HLT_AK8PFJet500_v',
-    'HLT_AK8PFJet550_v',
-    # CaloJet
-    'HLT_CaloJet500_NoJetID_v',
-    'HLT_CaloJet550_NoJetID_v',
-    # PFJet and PFHT
-    'HLT_PFHT1050_v',
-    'HLT_PFJet500_v',
-    'HLT_PFJet550_v',
-    # Trim mass jetpt+HT
-    'HLT_AK8PFHT800_TrimMass50_v',
-    'HLT_AK8PFHT850_TrimMass50_v',
-    'HLT_AK8PFHT900_TrimMass50_v',
-    'HLT_AK8PFJet360_TrimMass30_v'
-    'HLT_AK8PFJet400_TrimMass30_v',
-    'HLT_AK8PFJet420_TrimMass30_v',
-    ]
+triggers_per_year[2017] = copy.deepcopy(triggers_per_year[2018])
+triggers_per_year[2017]['jetht'].append('HLT_AK8PFJet360_TrimMass30_v')
 
-triggers_2017['htmht'] = [
-    'HLT_PFHT500_PFMET100_PFMHT100_IDTight_v',
-    'HLT_PFHT500_PFMET110_PFMHT110_IDTight_v',
-    'HLT_PFHT700_PFMET85_PFMHT85_IDTight_v',
-    'HLT_PFHT700_PFMET95_PFMHT95_IDTight_v',
-    'HLT_PFHT800_PFMET75_PFMHT75_IDTight_v',
-    'HLT_PFHT800_PFMET85_PFMHT85_IDTight_v',
+triggers_per_year[2016] = {
+    'jetht': [
+        'HLT_AK8PFHT700_TrimR0p1PT0p03Mass50_v',
+        'HLT_AK8PFJet360_TrimMass30_v',
+        'HLT_CaloJet500_NoJetID_v',
+        'HLT_PFHT900_v',
+        'HLT_PFJet450_v',
+        'HLT_PFJet500_v',
+        'HLT_PFHT800_v',
+    ],
+    'htmht': [
+        # MET
+        'HLT_PFHT300_PFMET100_v',
+        'HLT_PFHT300_PFMET110_v',
+    ],
+}
+
+met_filters = [
+    'HBHENoiseFilter',
+    'HBHEIsoNoiseFilter',
+    'eeBadScFilter',
+    'ecalBadCalibFilter',
+    'BadPFMuonFilter',
+    'BadChargedCandidateFilter',
+    'globalSuperTightHalo2016Filter',
 ]
-
-triggers_2016 = {}
-triggers_2016['jetht'] = [
-    'HLT_AK8PFHT700_TrimR0p1PT0p03Mass50_v',
-    'HLT_AK8PFJet360_TrimMass30_v',
-    'HLT_CaloJet500_NoJetID_v',
-    'HLT_PFHT900_v',
-    'HLT_PFJet450_v',
-    'HLT_PFJet500_v',
-    'HLT_PFHT800_v',
-    # MET included in HTMHT
-    #'HLT_PFHT300_PFMET100_v',
-    #'HLT_PFHT300_PFMET110_v',
-    ]
-
-triggers_2016['htmht'] = [
-    'HLT_PFHT300_PFMET100_v', 
-    'HLT_PFHT300_PFMET110_v'
-]
-
 
 #  ECAL DEAD CELL LOCATIONS
 # ecaldeadcells 2018 remove 5sigma
@@ -173,12 +155,18 @@ def metadata_from_path(path):
     Not very robust but not much else to go on either.
     """
     meta = {}
+    fullpath = path
     path = osp.basename(path)
 
     match = re.search(r'year(\d+)', path)
     if match:
         meta['year'] = int(match.group(1))
-    else:
+
+    match = re.search(r'UL(\d\d)', fullpath)
+    if match:
+        meta['year'] = int('20'+match.group(1))
+
+    if 'year' not in meta:
         meta['year'] = 2018
 
     match = re.search(r'madpt(\d+)', path)
@@ -333,7 +321,7 @@ BRANCHES = [
     'JetsAK15_ID',
     'NMuons', 'NElectrons',
     'HBHENoiseFilter', 'HBHEIsoNoiseFilter', 'eeBadScFilter',
-    'ecalBadCalibFilter' if UL else 'ecalBadCalibReducedFilter',
+    'ecalBadCalibFilter',
     'BadPFMuonFilter', 'BadChargedCandidateFilter', 'globalSuperTightHalo2016Filter',
     # highMET events
     'CaloMET', 'PFCaloMETRatio',
@@ -417,65 +405,6 @@ def open_root(rootfile, load_gen=True, load_hlt=False, load_jerjec=False, load_d
     """
     Returns an Arrays object from a rootfile (unfiltered).
     """
-    branches = [
-        'Jets.fCoordinates.fPt', 'Jets.fCoordinates.fEta',
-        'Jets.fCoordinates.fPhi',
-        'JetsAK8.fCoordinates.fPt', 'JetsAK8.fCoordinates.fEta', 'JetsAK8.fCoordinates.fPhi',
-        'JetsAK15.fCoordinates.fPt', 'JetsAK15.fCoordinates.fEta',
-        'JetsAK15.fCoordinates.fPhi', 'JetsAK15.fCoordinates.fE',
-        'JetsAK15_ecfC2b1', 'JetsAK15_ecfC2b2',
-        'JetsAK15_ecfD2b1', 'JetsAK15_ecfD2b2',
-        'JetsAK15_ecfM2b1', 'JetsAK15_ecfM2b2',
-        'JetsAK15_ecfN2b1', 'JetsAK15_ecfN2b2',
-        'JetsAK15_girth', 'JetsAK15_ptD',
-        'JetsAK15_axismajor', 'JetsAK15_axisminor',
-        'JetsAK15_chargedHadronEnergyFraction', 'JetsAK15_electronEnergyFraction', 'JetsAK15_muonEnergyFraction',
-        'JetsAK15_neutralHadronEnergyFraction', 'JetsAK15_photonEnergyFraction',
-        'JetsAK15_ID',
-        'HT',
-        'MET', 'METPhi',
-        'TriggerPass',
-        'NMuons', 'NElectrons',
-        'HBHENoiseFilter', 'HBHEIsoNoiseFilter', 'eeBadScFilter',
-        'ecalBadCalibFilter' if UL else 'ecalBadCalibReducedFilter',
-        'BadPFMuonFilter', 'BadChargedCandidateFilter', 'globalSuperTightHalo2016Filter',
-        # highMET events
-        'CaloMET', 'PFCaloMETRatio',
-        'Muons.fCoordinates.fPt', 'Muons.fCoordinates.fEta', 'Muons.fCoordinates.fPhi',
-        #'Muons_iso','Muons_mediumID'
-        #for ttstitch to work
-        #'Weight',
-        #'madHT', 'GenMET'
-        # all subjet components in ecf computation
-        'JetsAK15_ecfFullC2b1','JetsAK15_ecfFullC2b2','JetsAK15_ecfFullD2b1','JetsAK15_ecfFullD2b2','JetsAK15_ecfFullM2b1',
-        'JetsAK15_ecfFullM2b2','JetsAK15_ecfFullN2b1','JetsAK15_ecfFullN2b2',
-        #more new branches
-        'JetsAK15_nConstituents','JetsAK15_nConstituentsSoftDrop'
-        ]
-
-    if load_gen:
-        # Only available for simulation, not data
-        branches.extend([
-        'Weight','puWeight', 
-        'madHT', 'GenMET',
-        'GenParticles_PdgId',
-        'GenParticles_Status',
-        'GenParticles.fCoordinates.fPt',
-        'GenParticles.fCoordinates.fEta',
-        'GenParticles.fCoordinates.fPhi',
-        'GenParticles.fCoordinates.fE',
-        'JetsAK15_jecFactor',
-        'JetsAK15_jecUnc',
-        'JetsAK15_jerFactor',
-        'JetsAK15_jerFactorDown',
-        'JetsAK15_jerFactorUp',
-        'JetsAK15JECdown_jerFactor',
-        'JetsAK15JECdown_origIndex',
-        'JetsAK15JECup_jerFactor',
-        'JetsAK15JECup_origIndex',
-        'JetsAK15JERdown_origIndex',
-        'JetsAK15JERup_origIndex'
-        ])
     branches = BRANCHES[:]
     # Only available for simulation, not data
     if load_gen: branches.extend(BRANCHES_GENONLY)
@@ -569,13 +498,13 @@ def veto_HEM(eta,phi,pt):
     only for 2018_PostHEM era
     """
     hem = lambda eta_jet,phi_jet,pt_jet : ((eta_jet<-1.4) & (eta_jet>-3) & (phi_jet<-0.87) & (phi_jet>-1.57) & (pt_jet>30))
-    hemveto = np.bitwise_not(hem(eta,phi,pt)) 
+    hemveto = np.bitwise_not(hem(eta,phi,pt))
     return hemveto
 
 def cr_filter_preselection(array):
     """
     Preselection for the control region.
-    
+
     w.r.t. `filter_preselection`, does not include:
     - leading ak8 jet pt > 500
     - rtx > 1.1
@@ -621,17 +550,8 @@ def cr_filter_preselection(array):
     cutflow['nleptons=0'] = len(a)
 
     # MET filters
-    for b in [
-        'HBHENoiseFilter',
-        'HBHEIsoNoiseFilter',
-        'eeBadScFilter',
-        'ecalBadCalibFilter' if UL else 'ecalBadCalibReducedFilter',
-        'BadPFMuonFilter',
-        'BadChargedCandidateFilter',
-        'globalSuperTightHalo2016Filter',
-        ]:
+    for b in met_filters:
         a = a[a[b]!=0] # Pass events if not 0, is that correct?
-    cutflow['metfilter'] = len(a)
     cutflow['preselection'] = len(a)
 
     copy.array = a
@@ -650,7 +570,7 @@ def filter_preselection(array, single_muon_cr=False):
     copy = array.copy()
     a = copy.array
     cutflow = copy.cutflow
-    
+
     if not single_muon_cr:
         # AK8Jet.pT>500
         a = a[ak.count(a['JetsAK8.fCoordinates.fPt'], axis=-1)>=1] # At least one jet
@@ -668,13 +588,7 @@ def filter_preselection(array, single_muon_cr=False):
     a = a[ak.count(a['JetsAK15.fCoordinates.fPt'], axis=-1) >= 2]
     cutflow['n_ak15jets>=2'] = len(a)
 
-    # 
-    #JetsAK15_JetID criteria for tight selection cuts: https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2018
-    #a = a[a['JetsAK15_ID']>0]
-    #jets_id event level? -->apply it only to sub-leading jet?
-    #a = a[a['jetsak15_id']>0]
-    #a = a[a['JetsAK15_ID'][:,1]>0]
-    #cutflow['jetsak15_id'] = len(a)
+    # criteria for tight selection cuts: https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2018
     a = a[a['JetsAK15_ID'][:,1]>0.]
     cutflow['jetsak15_id'] = len(a)
 
@@ -699,7 +613,6 @@ def filter_preselection(array, single_muon_cr=False):
     a = a[rtx>1.1]
     cutflow['rtx>1.1'] = len(a)
 
-
     # muon pt < 1500 filter to avoid highMET events
     a = a[~ak.any(a['Muons.fCoordinates.fPt'] > 1500., axis=-1)]
     cutflow['muonpt<1500'] = len(a)
@@ -715,7 +628,7 @@ def filter_preselection(array, single_muon_cr=False):
             a = a[
                 (a['Muons_mediumID'][:,0])
                 & (a['Muons.fCoordinates.fPt'][:,0]>50.)
-                & (a['Muons_iso'][:,0]<.2) 
+                & (a['Muons_iso'][:,0]<.2)
                 ]
         if len(a):
             a = a[ak.count(a['HLTMuonObjects.fCoordinates.fPt'], axis=-1) >= 1]
@@ -734,15 +647,7 @@ def filter_preselection(array, single_muon_cr=False):
         cutflow['nleptons=0'] = len(a)
 
     # MET filters
-    for b in [
-        'HBHENoiseFilter',
-        'HBHEIsoNoiseFilter',
-        'eeBadScFilter',
-        'ecalBadCalibFilter' if UL else 'ecalBadCalibReducedFilter',
-        'BadPFMuonFilter',
-        'BadChargedCandidateFilter',
-        'globalSuperTightHalo2016Filter',
-        ]:
+    for b in met_filters:
         a = a[a[b]!=0] # Pass events if not 0, is that correct?
     cutflow['metfilter'] = len(a)
 
@@ -763,14 +668,6 @@ def filter_preselection(array, single_muon_cr=False):
     a = a[abs(METDphi)<1.5]
     cutflow['abs(metdphi)<1.5'] = len(a)
 
-    #JetsAK15_JetID criteria for tight selection cuts: https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2018
-    #a = a[a['JetsAK15_ID']>0]
-    #jets_id event level? -->apply it to sub-leading jets?
-    #a = a[a['ak15jets_id']>0]
-    #a = a[a['JetsAK15_ID'][:,1]>0]
-    #cutflow['ak15jets_id'] = len(a)
-
-
     cutflow['preselection'] = len(a)
 
     copy.array = a
@@ -779,7 +676,7 @@ def filter_preselection(array, single_muon_cr=False):
 
 
 def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=False, jetht=True):
-    """ 
+    """
         ordered selection cuts to make cutflowtable
           should be run after the filter_stitch(array) function
     """
@@ -869,15 +766,7 @@ def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=Fal
         cutflow['nleptons=0'] = len(a)
 
     # MET filters
-    for b in [
-        'HBHENoiseFilter',
-        'HBHEIsoNoiseFilter',
-        'eeBadScFilter',
-        'ecalBadCalibFilter' if UL else 'ecalBadCalibReducedFilter',
-        'BadPFMuonFilter',
-        'BadChargedCandidateFilter',
-        'globalSuperTightHalo2016Filter',
-        ]:
+    for b in met_filters:
         a = a[a[b]!=0] # Pass events if not 0, is that correct?
     cutflow['metfilter'] = len(a)
 
@@ -909,7 +798,7 @@ def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=Fal
     eta = a['JetsAK15.fCoordinates.fEta'][:,1].to_numpy()
     phi = a['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy()
     e = a['JetsAK15.fCoordinates.fE'][:,1].to_numpy()
-    
+
     met = a['MET'].to_numpy()
     metphi = a['METPhi'].to_numpy()
     mt = calculate_mt(
@@ -918,10 +807,6 @@ def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=Fal
      )
     a = a[(mt>180) & (mt<650)]
     cutflow['180<mt<650'] = len(a)
-
-    # HEM issue
-     
-
 
     cutflow['ordered_preselection'] = len(a)
 
@@ -934,7 +819,7 @@ def selection_plots(array):
     copy = array.copy()
     a = copy.array
     cutflow = copy.cutflow
-    
+
     # At least 2 AK15 jets
     a = a[ak.count(a['JetsAK15.fCoordinates.fPt'], axis=-1) >= 2]
     cutflow['n_ak15jets>=2'] = len(a)
@@ -958,15 +843,7 @@ def selection_plots(array):
     cutflow['ecaldeadcells'] = len(a)
 
     # MET filters
-    for b in [
-        'HBHENoiseFilter',
-        'HBHEIsoNoiseFilter',
-        'eeBadScFilter',
-        'ecalBadCalibFilter' if UL else 'ecalBadCalibReducedFilter',
-        'BadPFMuonFilter',
-        'BadChargedCandidateFilter',
-        'globalSuperTightHalo2016Filter',
-        ]:
+    for b in met_filters:
         a = a[a[b]!=0] # Pass events if not 0, is that correct?
     cutflow['metfilter'] = len(a)
 
@@ -975,7 +852,6 @@ def selection_plots(array):
     copy.array = a
     logger.debug('cutflow:\n%s', pprint.pformat(copy.cutflow))
     return copy
-    
 
 def selection_deadcells(array):
     # deadcells study with latest preselection cuts
@@ -1016,15 +892,7 @@ def selection_deadcells(array):
     cutflow['muonpt<1500'] = len(a)
 
     # MET filters
-    for b in [
-        'HBHENoiseFilter',
-        'HBHEIsoNoiseFilter',
-        'eeBadScFilter',
-        'ecalBadCalibFilter' if UL else 'ecalBadCalibReducedFilter',
-        'BadPFMuonFilter',
-        'BadChargedCandidateFilter',
-        'globalSuperTightHalo2016Filter',
-        ]:
+    for b in met_filters:
         a = a[a[b]!=0] # Pass events if not 0, is that correct?
     cutflow['metfilter'] = len(a)
 
@@ -1042,7 +910,7 @@ def selection_deadcells(array):
     eta = a['JetsAK15.fCoordinates.fEta'][:,1].to_numpy()
     phi = a['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy()
     e = a['JetsAK15.fCoordinates.fE'][:,1].to_numpy()
-    
+
     met = a['MET'].to_numpy()
     metphi = a['METPhi'].to_numpy()
     mt = calculate_mt(
@@ -1088,12 +956,9 @@ def girthddt(mt, pt,rho,girth,weight):
     Pt_min, Pt_max = min(PT_edges), max(PT_edges)
     Rho_min, Rho_max = min(RHO_edges), max(RHO_edges)
 
-    ptbin_float  = nbins*(pt-Pt_min)/(Pt_max-Pt_min) 
+    ptbin_float  = nbins*(pt-Pt_min)/(Pt_max-Pt_min)
     rhobin_float = nbins*(rho-Rho_min)/(Rho_max-Rho_min)
 
-    #ptbin         = np.clip(1 + ptbin_float.astype(int),   0, nbins)
-    #rhobin        = np.clip(1 + rhobin_float.astype(int),  0, nbins)
-    # print('*'*10, ptbin_float, '*'*10, rhobin_float)
     ptbin  = np.clip(1 + np.round(ptbin_float).astype(int), 0, nbins)
     rhobin = np.clip(1 + np.round(rhobin_float).astype(int), 0, nbins)
 
@@ -1108,7 +973,7 @@ def filter_girthDDT(array):
     eta = a['JetsAK15.fCoordinates.fEta'][:,1].to_numpy()
     phi = a['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy()
     e = a['JetsAK15.fCoordinates.fE'][:,1].to_numpy()
-    
+
     met = a['MET'].to_numpy()
     metphi = a['METPhi'].to_numpy()
     mt = calculate_mt(
@@ -1120,9 +985,9 @@ def filter_girthDDT(array):
     girth = a['JetsAK15_girth'][:,1].to_numpy()
     weight =a['Weight'].to_numpy()
     a['girthddt'] = girthddt(mt, pt, rho, girth,weight)
-    
+
     a = a[a['girthddt']>0]
-    
+
     cutflow['girthddt>0'] = len(a)
     copy.array = a
     return copy
@@ -1253,13 +1118,6 @@ def filter_stitch(array):
             else:
                 a = a[(a['madHT']<600.) & (a['GenMET']<150.)]
         else:
-            # Inclusive
-            '''genparticle_pdgid = np.abs(a['GenParticles_PdgId'])
-            n_leptons = (
-                ak.sum(genparticle_pdgid==11, axis=-1)
-                + ak.sum(genparticle_pdgid==13, axis=-1)
-                + ak.sum(genparticle_pdgid==15, axis=-1)
-                )'''
             #correction for number of leptons
             n_leptons = (
                 ak.count(a['GenElectrons.fCoordinates.fPt'], axis=-1)
@@ -1281,12 +1139,12 @@ def filter_stitch(array):
 
 def filter_hemveto(array):
     """
-    Filter to cut away AK4 jets within HEM area 
+    Filter to cut away AK4 jets within HEM area
     only applicable for 2018 posthem era
     """
     copy = array.copy()
     a = copy.array
-    
+
     eta = a['Jets.fCoordinates.fEta'][:,1].to_numpy()
     phi = a['Jets.fCoordinates.fPhi'][:,1].to_numpy()
     pt  = a['Jets.fCoordinates.fPt'][:,1].to_numpy()
@@ -1298,8 +1156,6 @@ def filter_hemveto(array):
     copy.array = a
     copy.cut('hem_veto')
     return copy
-    
-
 
 
 def filter_at_least_one_ak8jet(array):
@@ -1527,9 +1383,7 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     a['ecfn2b2'] = arr['JetsAK15_ecfN2b2'][:,1].to_numpy()
     a['metdphi'] = calc_dphi(arr['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy(), arr['METPhi'].to_numpy())
 
-    if load_mc: a['weight'] = arr['Weight'].to_numpy() #if 'Weight' in arr else np.ones(len(arr))
-    #a['weight'] =np.ones(len(arr))
-    #if is_mc: a['weight'] = arr['Weight'].to_numpy()
+    if load_mc: a['weight'] = arr['Weight'].to_numpy()
     a['met'] = arr['MET'].to_numpy()
     a['metphi'] = arr['METPhi'].to_numpy()
 
@@ -1574,7 +1428,7 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     a['ak8_lead_phi']= ak.fill_none(ak.firsts(arr['JetsAK8.fCoordinates.fPhi']), -1).to_numpy()
     a['ak8_lead_eta']= ak.fill_none(ak.firsts(arr['JetsAK8.fCoordinates.fEta']), -1).to_numpy()
 
-
+    a['jetsak15_id'] = arr['JetsAK15_ID'][:,1].to_numpy()
     if load_mc:
         a['puweight'] = arr['puWeight'].to_numpy()
         a['JetsAK15_jecFactor']             = arr['JetsAK15_jecFactor'][:,1].to_numpy()
@@ -1588,36 +1442,14 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
         a['JetsAK15JECup_origIndex']        = arr['JetsAK15JECup_origIndex'][:,1].to_numpy()
         a['JetsAK15JERdown_origIndex']      = arr['JetsAK15JERdown_origIndex'][:,1].to_numpy()
         a['JetsAK15JERup_origIndex']        = arr['JetsAK15JERup_origIndex'][:,1].to_numpy()
-        a['jetsak15_id'] = arr['JetsAK15_ID'][:,1].to_numpy()
 
     if save_scale_weights:
         a['scaleweights'] = arr['ScaleWeights'].to_numpy()
 
-    # QCD high MET events 
-    #a['CaloMET']        = arr['CaloMET'].to_numpy()
-    #a['PFCaloMETRatio'] = arr['PFCaloMETRatio'].to_numpy()
+    # QCD high MET events
     a['lead_muonpt']    = ak.fill_none(ak.firsts(arr['Muons.fCoordinates.fPt']), -1.).to_numpy()
     a['nmuons']         = arr['NMuons'].to_numpy()
     a['nelectrons']     = arr['NElectrons'].to_numpy()
-    '''a['lead_muoneta']   = arr['Muons.fCoordinates.fEta'][:,0].to_numpy()
-    a['lead_muonphi']   = arr['Muons.fCoordinates.fPhi'][:,0].to_numpy()'''
-    #a['lead_muoniso'] = arr['Muons_iso'][:,0].to_numpy()
-    #a['lead_muonmediumID'] = arr['Muons_mediumID'][:,0].to_numpy()
-    #a['subl_muonpt']    = arr['Muons.fCoordinates.fPt'][:,1].to_numpy()
-    #a['subl_muoneta']   = arr['Muons.fCoordinates.fEta'][:,1].to_numpy()
-    #a['subl_muonphi']   = arr['Muons.fCoordinates.fPhi'][:,1].to_numpy()
-    #a['subl_muoniso'] = arr['Muons_iso'][:,1].to_numpy()
-    #a['subl_muonmediumID'] = arr['Muons_mediumID'][:,1].to_numpy()
-    #a['NMuons'] = arr['NMuons'].to_numpy()
-
-    # Gen information, should change so it could be turned off for data
-    '''a['GenMET'] = arr['GenMET'].to_numpy() if 'GenMET' in arr else np.ones(len(arr))
-    a['subl_genjets_eta'] = arr['GenJets.fCoordinates.fEta'][:,1].to_numpy()
-    a['subl_genjets_phi'] = arr['GenJets.fCoordinates.fPhi'][:,1].to_numpy()
-    a['subl_genjets_pt'] = arr['GenJets.fCoordinates.fPt'][:,1].to_numpy()
-    a['lead_genjets_eta'] = arr['GenJets.fCoordinates.fEta'][:,0].to_numpy()
-    a['lead_genjets_phi'] = arr['GenJets.fCoordinates.fPhi'][:,0].to_numpy()
-    a['lead_genjets_pt'] = arr['GenJets.fCoordinates.fPt'][:,0].to_numpy()'''
 
     # add ecf with full jet components
     a['ecfm2b1full'] = arr['JetsAK15_ecfFullM2b1'][:,1].to_numpy()
@@ -1627,7 +1459,7 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     a['ecfc2b1full'] = arr['JetsAK15_ecfFullC2b1'][:,1].to_numpy()
     a['ecfc2b2full'] = arr['JetsAK15_ecfFullC2b2'][:,1].to_numpy()
     a['ecfd2b1full'] = arr['JetsAK15_ecfFullD2b1'][:,1].to_numpy()
-    a['ecfd2b2full'] = arr['JetsAK15_ecfFullD2b2'][:,1].to_numpy() 
+    a['ecfd2b2full'] = arr['JetsAK15_ecfFullD2b2'][:,1].to_numpy()
 
     # more branches
     a['JetsAK15_nConstituents']         = arr['JetsAK15_nConstituents'][:,1].to_numpy()
