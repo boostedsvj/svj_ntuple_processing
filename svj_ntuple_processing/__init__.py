@@ -406,7 +406,7 @@ BRANCHES_JERJEC = [
     ]
 
 
-def open_root(rootfile, load_gen=True, load_hlt=False, load_jerjec=False, load_dataset=False):
+def open_root(rootfile, local=False, load_gen=True, load_hlt=False, load_jerjec=False):
     """
     Returns an Arrays object from a rootfile (unfiltered).
     """
@@ -416,8 +416,8 @@ def open_root(rootfile, load_gen=True, load_hlt=False, load_jerjec=False, load_d
     if load_hlt: branches.extend(BRANCHES_HLT)
     if load_jerjec: branches.extend(BRANCHES_JERJEC)
 
-    with local_copy(rootfile) as local:
-        tree = uproot.open(local + ':TreeMaker2/PreSelection')
+    with local_copy(rootfile) if local else rootfile as fname:
+        tree = uproot.open(fname + ':TreeMaker2/PreSelection')
         arrays = Arrays(tree.arrays(branches))
 
     # Store the order of trigger names in the array object
@@ -428,11 +428,11 @@ def open_root(rootfile, load_gen=True, load_hlt=False, load_jerjec=False, load_d
     return arrays
 
 
-def open_data_root(rootfile):
+def open_data_root(rootfile, **kwargs):
     """
     Like open_root but for data
     """
-    return open_root(rootfile, load_gen=False, load_dataset=True)
+    return open_root(rootfile, load_gen=False, **kwargs)
 
 
 def calc_dphi(phi1, phi2):
