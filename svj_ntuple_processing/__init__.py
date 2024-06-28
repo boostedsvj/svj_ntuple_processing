@@ -372,6 +372,7 @@ def local_copy(remote):
 
 
 BRANCHES = [
+    'RunNum','LumiBlockNum','EvtNum',
     'Jets.fCoordinates.fPt', 'Jets.fCoordinates.fEta',
     'Jets.fCoordinates.fPhi', 'Jets.fCoordinates.fE',
     'JetsAK8.fCoordinates.fPt', 'JetsAK8.fCoordinates.fEta',
@@ -1357,6 +1358,9 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
         a['pt'], a['eta'], a['phi'], a['e'],
         a['met'], a['metphi']
         )
+    a['run'] = arr['RunNum'].to_numpy()
+    a['lumiblock'] = arr['LumiBlockNum'].to_numpy()
+    a['evt'] = arr['EvtNum'].to_numpy()
 
     a['ak15_chad_ef'] = arr['JetsAK15_chargedHadronEnergyFraction'][:,1].to_numpy()
     a['ak15_nhad_ef'] = arr['JetsAK15_neutralHadronEnergyFraction'][:,1].to_numpy()
