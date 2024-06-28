@@ -473,10 +473,15 @@ BRANCHES_JERJEC = [
     ]
 
 
-def open_root(rootfile, local=False, load_gen=True, load_hlt=False, load_jerjec=False):
+def open_root(rootfile, local=False, load_hlt=False):
     """
     Returns an Arrays object from a rootfile (unfiltered).
     """
+	# get metadata first to determine branches to load
+	metadata = metadata_from_path(rootfile)
+	load_gen = metadata["sample_type"]!="data"
+	load_jerjec = metadata["sample_type"]=="sig"
+
     branches = BRANCHES[:]
     # Only available for simulation, not data
     if load_gen: branches.extend(BRANCHES_GENONLY)
@@ -490,16 +495,9 @@ def open_root(rootfile, local=False, load_gen=True, load_hlt=False, load_jerjec=
     # Store the order of trigger names in the array object
     arrays.trigger_branch = tree['TriggerPass'].title.split(',')
     arrays.metadata['src'] = rootfile
-    arrays.metadata.update(metadata_from_path(rootfile))
+    arrays.metadata.update(metadata)
     arrays.cut('raw')
     return arrays
-
-
-def open_data_root(rootfile, **kwargs):
-    """
-    Like open_root but for data
-    """
-    return open_root(rootfile, load_gen=False, **kwargs)
 
 
 def calc_dphi(phi1, phi2):
