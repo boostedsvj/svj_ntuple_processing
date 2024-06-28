@@ -38,8 +38,8 @@ logger = setup_logger()
 
 UL = True  # Global switch for UL vs PREL
 
-
-triggers_2018 = [
+triggers_2018 = {}
+triggers_2018['jetht'] = [
     # AK8PFJet triggers
     'HLT_AK8PFJet500_v',
     'HLT_AK8PFJet550_v',
@@ -64,11 +64,40 @@ triggers_2018 = [
     'HLT_PFHT800_PFMET75_PFMHT75_IDTight_v',
     'HLT_PFHT800_PFMET85_PFMHT85_IDTight_v',
     ]
+triggers_2018['htmht'] = triggers_2018['jetht'][:]
 
-triggers_2017 = triggers_2018[:]
-triggers_2017.append('HLT_AK8PFJet360_TrimMass30_v')
+triggers_2017 = {}
+triggers_2017['jetht'] = [
+    # AK8PFJet triggers
+    'HLT_AK8PFJet500_v',
+    'HLT_AK8PFJet550_v',
+    # CaloJet
+    'HLT_CaloJet500_NoJetID_v',
+    'HLT_CaloJet550_NoJetID_v',
+    # PFJet and PFHT
+    'HLT_PFHT1050_v',
+    'HLT_PFJet500_v',
+    'HLT_PFJet550_v',
+    # Trim mass jetpt+HT
+    'HLT_AK8PFHT800_TrimMass50_v',
+    'HLT_AK8PFHT850_TrimMass50_v',
+    'HLT_AK8PFHT900_TrimMass50_v',
+    'HLT_AK8PFJet360_TrimMass30_v'
+    'HLT_AK8PFJet400_TrimMass30_v',
+    'HLT_AK8PFJet420_TrimMass30_v',
+    ]
 
-triggers_2016 = [
+triggers_2017['htmht'] = [
+    'HLT_PFHT500_PFMET100_PFMHT100_IDTight_v',
+    'HLT_PFHT500_PFMET110_PFMHT110_IDTight_v',
+    'HLT_PFHT700_PFMET85_PFMHT85_IDTight_v',
+    'HLT_PFHT700_PFMET95_PFMHT95_IDTight_v',
+    'HLT_PFHT800_PFMET75_PFMHT75_IDTight_v',
+    'HLT_PFHT800_PFMET85_PFMHT85_IDTight_v',
+]
+
+triggers_2016 = {}
+triggers_2016['jetht'] = [
     'HLT_AK8PFHT700_TrimR0p1PT0p03Mass50_v',
     'HLT_AK8PFJet360_TrimMass30_v',
     'HLT_CaloJet500_NoJetID_v',
@@ -76,13 +105,15 @@ triggers_2016 = [
     'HLT_PFJet450_v',
     'HLT_PFJet500_v',
     'HLT_PFHT800_v',
-    # MET:
-    'HLT_PFHT300_PFMET100_v',
-    'HLT_PFHT300_PFMET110_v',
+    # MET included in HTMHT
+    #'HLT_PFHT300_PFMET100_v',
+    #'HLT_PFHT300_PFMET110_v',
     ]
 
-# Checked: 2017 identical to 2018
-triggers_per_year = {2016: triggers_2016, 2017: triggers_2017, 2018: triggers_2018}
+triggers_2016['htmht'] = [
+    'HLT_PFHT300_PFMET100_v', 
+    'HLT_PFHT300_PFMET110_v'
+]
 
 
 #  ECAL DEAD CELL LOCATIONS
@@ -196,6 +227,7 @@ class Arrays:
         self.trigger_branch = None
         self.cutflow = OrderedDict()
         self.metadata = {'year' : 2018}
+        self.metadata
         self._xs = None
 
     def __len__(self):
@@ -233,6 +265,7 @@ class Arrays:
     @property
     def triggers(self):
         return triggers_per_year[self.year]
+        #return triggers_per_dataset[dataset][self.year]
 
     @property
     def xs(self):
@@ -306,9 +339,9 @@ BRANCHES = [
     'Muons.fCoordinates.fPhi', 'Muons.fCoordinates.fE',
     'Muons_iso', 'Muons_mediumID',
     # more new branches from Kevin 05/06/2024
-    'JetsAK15_nConstituents','JetsAK15_nConstituentsSoftDrop','JetsAK15_jecFactor','JetsAK15_jecUnc','JetsAK15_jerFactor',
-    'JetsAK15_jerFactorDown','JetsAK15_jerFactorUp','JetsAK15JECdown_jerFactor','JetsAK15JECdown_origIndex',
-    'JetsAK15JECup_jerFactor','JetsAK15JECup_origIndex','JetsAK15JERdown_origIndex','JetsAK15JERup_origIndex',
+    'JetsAK15_nConstituents','JetsAK15_nConstituentsSoftDrop',#'JetsAK15_jecFactor','JetsAK15_jecUnc','JetsAK15_jerFactor',
+    #'JetsAK15_jerFactorDown','JetsAK15_jerFactorUp','JetsAK15JECdown_jerFactor','JetsAK15JECdown_origIndex',
+    #'JetsAK15JECup_jerFactor','JetsAK15JECup_origIndex','JetsAK15JERdown_origIndex','JetsAK15JERup_origIndex',
     # new ecf branches
     'JetsAK15_ecfFullC2b1','JetsAK15_ecfFullC2b2','JetsAK15_ecfFullD2b1','JetsAK15_ecfFullD2b2','JetsAK15_ecfFullM2b1',
     'JetsAK15_ecfFullM2b2','JetsAK15_ecfFullN2b1','JetsAK15_ecfFullN2b2'
@@ -376,7 +409,7 @@ BRANCHES_JERJEC = [
     ]
 
 
-def open_root(rootfile, load_gen=True, load_hlt=False, load_jerjec=False):
+def open_root(rootfile, load_gen=True, load_hlt=False, load_jerjec=False, load_dataset=False):
     """
     Returns an Arrays object from a rootfile (unfiltered).
     """
@@ -413,10 +446,9 @@ def open_root(rootfile, load_gen=True, load_hlt=False, load_jerjec=False):
         'JetsAK15_ecfFullC2b1','JetsAK15_ecfFullC2b2','JetsAK15_ecfFullD2b1','JetsAK15_ecfFullD2b2','JetsAK15_ecfFullM2b1',
         'JetsAK15_ecfFullM2b2','JetsAK15_ecfFullN2b1','JetsAK15_ecfFullN2b2',
         #more new branches
-        'JetsAK15_nConstituents','JetsAK15_nConstituentsSoftDrop','JetsAK15_jecFactor','JetsAK15_jecUnc','JetsAK15_jerFactor',
-        'JetsAK15_jerFactorDown','JetsAK15_jerFactorUp','JetsAK15JECdown_jerFactor','JetsAK15JECdown_origIndex',
-        'JetsAK15JECup_jerFactor','JetsAK15JECup_origIndex','JetsAK15JERdown_origIndex','JetsAK15JERup_origIndex'
-
+        'JetsAK15_nConstituents','JetsAK15_nConstituentsSoftDrop'#,'JetsAK15_jecFactor','JetsAK15_jecUnc','JetsAK15_jerFactor',
+        #'JetsAK15_jerFactorDown','JetsAK15_jerFactorUp','JetsAK15JECdown_jerFactor','JetsAK15JECdown_origIndex',
+        #'JetsAK15JECup_jerFactor','JetsAK15JECup_origIndex','JetsAK15JERdown_origIndex','JetsAK15JERup_origIndex'
         ]
 
     if load_gen:
@@ -430,6 +462,17 @@ def open_root(rootfile, load_gen=True, load_hlt=False, load_jerjec=False):
         'GenParticles.fCoordinates.fEta',
         'GenParticles.fCoordinates.fPhi',
         'GenParticles.fCoordinates.fE',
+        'JetsAK15_jecFactor',
+        'JetsAK15_jecUnc',
+        'JetsAK15_jerFactor',
+        'JetsAK15_jerFactorDown',
+        'JetsAK15_jerFactorUp',
+        'JetsAK15JECdown_jerFactor',
+        'JetsAK15JECdown_origIndex',
+        'JetsAK15JECup_jerFactor',
+        'JetsAK15JECup_origIndex',
+        'JetsAK15JERdown_origIndex',
+        'JetsAK15JERup_origIndex'
         ])
     branches = BRANCHES[:]
     # Only available for simulation, not data
@@ -453,7 +496,7 @@ def open_data_root(rootfile):
     """
     Like open_root but for data
     """
-    return open_root(rootfile, load_gen=False)
+    return open_root(rootfile, load_gen=False, load_dataset=True)
 
 
 def calc_dphi(phi1, phi2):
@@ -733,7 +776,7 @@ def filter_preselection(array, single_muon_cr=False):
     return copy
 
 
-def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=False):
+def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=False, jetht=True):
     """ 
         ordered selection cuts to make cutflowtable
           should be run after the filter_stitch(array) function
@@ -741,6 +784,7 @@ def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=Fal
     copy = array.copy()
     a = copy.array
     cutflow = copy.cutflow
+
 
     # At least 2 AK15 jets
     a = a[ak.count(a['JetsAK15.fCoordinates.fPt'], axis=-1) >= 2]
@@ -754,10 +798,26 @@ def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=Fal
     a = a[np.abs(a['JetsAK15.fCoordinates.fEta'][:,1])<2.4]
     cutflow['subl_eta<2.4'] = len(a)
 
-    # AK8 jetpt>500
+    '''# AK8 jetpt>500
     a = a[ak.count(a['JetsAK8.fCoordinates.fPt'], axis=-1)>=1] # At least one jet
     a = a[a['JetsAK8.fCoordinates.fPt'][:,0]>500.] # leading>500
-    cutflow['ak8jet.pt>500'] = len(a)
+    cutflow['ak8jet.pt>500'] = len(a)'''
+
+    if jetht:     triggers_per_year = {2016: triggers_2016['jetht'], 2017: triggers_2017['jetht'], 2018: triggers_2018['jetht']}
+    if not jetht: triggers_per_year = {2016: triggers_2016['htmht'], 2017: triggers_2017['htmht'], 2018: triggers_2018['htmht']}
+
+    if not single_muon_cr:
+        # AK8Jet.pT>500
+        a = a[ak.count(a['JetsAK8.fCoordinates.fPt'], axis=-1)>=1] # At least one jet
+        a = a[a['JetsAK8.fCoordinates.fPt'][:,0]>500.] # leading>500
+        cutflow['ak8jet.pt>500'] = len(a)
+
+        # Triggers
+        trigger_indices = np.array([copy.trigger_branch.index(t) for t in triggers_per_year[copy.year]])
+        if len(a):
+            trigger_decisions = a['TriggerPass'].to_numpy()[:,trigger_indices]
+            a = a[(trigger_decisions == 1).any(axis=-1)]
+        cutflow['triggers'] = len(a)
 
     # positive ECF values
     for ecf in [
