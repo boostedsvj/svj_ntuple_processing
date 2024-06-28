@@ -88,11 +88,34 @@ triggers_per_year[2016] = {
     ],
 }
 
-def get_all_triggers(year):
-    all_triggers = []
+trigger_hierarchy = [
+    'jetht',
+    'htmht',
+]
+
+# to prevent overlap in PDs:
+# take events in PD0 passing any trigger
+# take events in PD1 passing any trigger but failing PD0-specific triggers
+# take events in PD2 passing any trigger but failing PD0,PD1-specific triggers
+# etc.
+# (for MC, just take all triggers)
+def get_pd_triggers(pd,year):
+    good_triggers = []
+    bad_triggers = []
+    pd_index = 0
+    if pd in trigger_hierarchy:
+        pd_index = trigger_hierarchy.index(pd)
+
     for key,val in triggers_per_year[year].items():
-        all_triggers += items
-    return all_triggers
+        key_index = 0
+        if pd in trigger_hierarchy:
+            key_index = trigger_hierarchy.index(key)
+
+        if key_index < pd_index:
+            bad_triggers += val
+        else:
+            good_triggers += val
+    return good_triggers, bad_triggers
 
 met_filters = [
     'HBHENoiseFilter',
@@ -163,48 +186,93 @@ def metadata_from_path(path):
     meta = {}
     fullpath = path
     path = osp.basename(path)
+    if path[0].isdigit():
+        # follows TreeMaker naming convention (folderized)
+        sample_path = osp.basename(osp.dirname(fullpath))
+        year_path = osp.basename(osp.dirname(osp.dirname(fullpath)))
+    else:
+        # older sample
+        year_path = fullpath
+        sample_path = path
 
-    match = re.search(r'year(\d+)', path)
+    match = re.search(r'year(\d+)', year_path)
     if match:
         meta['year'] = int(match.group(1))
 
-    match = re.search(r'UL(?:20)?(\d\d)', fullpath)
+    match = re.search(r'UL(?:20)?(\d\d)', year_path)
     if match:
         meta['year'] = int('20'+match.group(1))
 
     if 'year' not in meta:
         meta['year'] = 2018
 
-    match = re.search(r'madpt(\d+)', path)
-    if match: meta['madpt'] = int(match.group(1))
+    pds = ['jetht','htmht','met','singlemuon']
+    for pd in pds:
+        if samplepath.lower().startswith(pd):
+            metadata['sample_type'] = 'data'
+            metadata['data_type'] = pd
+            break
 
-    match = re.search(r'MADPT(\d+)', path)
-    if match: meta['madpt'] = int(match.group(1))
+    bkgs = ['qcd', 'ttjets', 'wjets', 'zjets']
+    for bkg in bkgs:
+        if sample_path.lower().startswith(bkg):
+            metadata['sample_type'] = 'bkg'
+            metadata['bkg_type'] = bkg
+            break
 
-    match = re.search(r'genjetpt(\d+)', path)
-    if match:
-        meta['genjetpt'] = int(match.group(1))
+    if 'sample_type' not in metadata:
+        metadata['sample_type'] = 'sig'
 
-    match = re.search(r'mz(\d+)', path)
-    if match: meta['mz'] = int(match.group(1))
+    # bkg-specific info
+    if metadata['sample_type']=='bkg':
+        if 'HT' in dirname:
+            match = re.search(r'HT\-(\d+)[tT]o([\dInf]+)', dirname)
+            metadata['htbin'] = [float(match.group(1)), float(match.group(2))]
+        elif 'Pt' in dirname:
+            match = re.search(r'Pt_(\d+)to([\dInf]+)', dirname)
+            metadata['ptbin'] = [float(match.group(1)), float(match.group(2))]
 
-    match = re.search(r'mMed-(\d+)', path)
-    if match: meta['mz'] = int(match.group(1))
+        if bkg_type == 'ttjets':
+            if 'SingleLep' in dirname:
+                metadata['n_lepton_sample'] = 1
+            elif 'DiLep' in dirname:
+                metadata['n_lepton_sample'] = 2
 
-    match = re.search(r'mdark(\d+)', path)
-    if match: meta['mdark'] = int(match.group(1))
+        if 'genMET' in dirname:
+            metadata['genmet_sample'] = True
 
-    match = re.search(r'mDark-(\d+)', path)
-    if match: meta['mdark'] = int(match.group(1))
+    # sig-specific info
+    elif metadata['sample_type']=='sig':
+        match = re.search(r'madpt(\d+)', path)
+        if match: meta['madpt'] = int(match.group(1))
 
-    match = re.search(r'rinv(\d\.\d+)', path)
-    if match: meta['rinv'] = float(match.group(1))
+        match = re.search(r'MADPT(\d+)', path)
+        if match: meta['madpt'] = int(match.group(1))
 
-    match = re.search(r'rinv-(\d\.\d+)', path)
-    if match: meta['rinv'] = float(match.group(1))
+        match = re.search(r'genjetpt(\d+)', path)
+        if match:
+            meta['genjetpt'] = int(match.group(1))
 
-    match = re.search(r'rinv-(\dp\d+)', path)
-    if match: meta['rinv'] = float(match.group(1).replace('p','.'))
+        match = re.search(r'mz(\d+)', path)
+        if match: meta['mz'] = int(match.group(1))
+
+        match = re.search(r'mMed-(\d+)', path)
+        if match: meta['mz'] = int(match.group(1))
+
+        match = re.search(r'mdark(\d+)', path)
+        if match: meta['mdark'] = int(match.group(1))
+
+        match = re.search(r'mDark-(\d+)', path)
+        if match: meta['mdark'] = int(match.group(1))
+
+        match = re.search(r'rinv(\d\.\d+)', path)
+        if match: meta['rinv'] = float(match.group(1))
+
+        match = re.search(r'rinv-(\d\.\d+)', path)
+        if match: meta['rinv'] = float(match.group(1))
+
+        match = re.search(r'rinv-(\dp\d+)', path)
+        if match: meta['rinv'] = float(match.group(1).replace('p','.'))
 
     return meta
 
@@ -223,8 +291,7 @@ class Arrays:
         self.array = array
         self.trigger_branch = None
         self.cutflow = OrderedDict()
-        self.metadata = {'year' : 2018}
-        self.metadata
+        self.metadata = {}
         self._xs = None
 
     def __len__(self):
@@ -252,7 +319,6 @@ class Arrays:
     def bkg_type(self):
         if 'bkg_type' in self.metadata:
             return self.metadata['bkg_type']
-        # TODO: Something based on filename
 
     @property
     def data_type(self):
@@ -261,7 +327,7 @@ class Arrays:
 
     @property
     def triggers(self):
-        return get_all_triggers(self.year)
+        return get_pd_triggers(self.data_type,self.year)
 
     @property
     def xs(self):
@@ -592,10 +658,16 @@ def filter_preselection(array, single_muon_cr=False):
 
     if not single_muon_cr:
         # Triggers
-        trigger_indices = np.array([copy.trigger_branch.index(t) for t in copy.triggers])
+        good_triggers, bad_triggers = copy.triggers
+        good_indices = np.array([copy.trigger_branch.index(t) for t in good_triggers])
+        bad_indices = np.array([copy.trigger_branch.index(t) for t in bad_triggers])
         if len(a):
-            trigger_decisions = a['TriggerPass'].to_numpy()[:,trigger_indices]
-            a = a[(trigger_decisions == 1).any(axis=-1)]
+            good_decisions = a['TriggerPass'].to_numpy()[:,good_indices]
+            a = a[(good_decisions == 1).any(axis=-1)]
+            # only keep events that fail the bad triggers
+            if len(bad_triggers):
+                bad_decisions = a['TriggerPass'].to_numpy()[:,bad_indices]
+                a = a[np.logical_not((bad_decisions == 1).any(axis=-1))]
         cutflow['triggers'] = len(a)
 
         # AK8 jetpt>500
