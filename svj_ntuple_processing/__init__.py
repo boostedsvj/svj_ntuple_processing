@@ -427,6 +427,8 @@ BRANCHES_GENONLY = [
     'GenMuons.fCoordinates.fPt',
     'GenTaus.fCoordinates.fPt',
     'ScaleWeights',
+    'PDFweights', 'PSweights',
+    'puSysUp', 'puSysDown',
     'METDown', 'METUp', 'METPhiDown', 'METPhiUp',
     'JetsAK15_jecFactor','JetsAK15_jecUnc','JetsAK15_jerFactor',
     'JetsAK15_jerFactorDown','JetsAK15_jerFactorUp','JetsAK15JECdown_jerFactor','JetsAK15JECdown_origIndex',
@@ -470,8 +472,19 @@ BRANCHES_JERJEC = [
     'JetsAK15_jerFactor',
     'JetsAK15_jerFactorDown',
     'JetsAK15_jerFactorUp',
+    'GenJets.fCoordinates.fPt',
+    'GenJets.fCoordinates.fEta',
+    'GenJets.fCoordinates.fPhi',
+    'GenJets.fCoordinates.fE',
+    'GenJetsAK8.fCoordinates.fPt',
+    'GenJetsAK8.fCoordinates.fEta',
+    'GenJetsAK8.fCoordinates.fPhi',
+    'GenJetsAK8.fCoordinates.fE',
+    'GenJetsAK15.fCoordinates.fPt',
+    'GenJetsAK15.fCoordinates.fEta',
+    'GenJetsAK15.fCoordinates.fPhi',
+    'GenJetsAK15.fCoordinates.fE',
     ]
-
 
 def open_root(rootfile, local=False, load_hlt=False):
     """
