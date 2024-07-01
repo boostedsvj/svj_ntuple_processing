@@ -404,11 +404,11 @@ BRANCHES_JERJEC = [
     #'JetsAK15JERdown_origIndex',
     #'JetsAK15JERup_origIndex',
     'JetsAK15_origIndex',
-    #'JetsAK15_jecFactor',
-    #'JetsAK15_jecUnc',
-    #'JetsAK15_jerFactor',
-    #'JetsAK15_jerFactorDown',
-    #'JetsAK15_jerFactorUp',
+    'JetsAK15_jecFactor',
+    'JetsAK15_jecUnc',
+    'JetsAK15_jerFactor',
+    'JetsAK15_jerFactorDown',
+    'JetsAK15_jerFactorUp',
     ]
 
 
