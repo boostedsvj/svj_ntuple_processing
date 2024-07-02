@@ -490,10 +490,10 @@ def open_root(rootfile, local=False, load_hlt=False):
     """
     Returns an Arrays object from a rootfile (unfiltered).
     """
-	# get metadata first to determine branches to load
-	metadata = metadata_from_path(rootfile)
-	load_gen = metadata["sample_type"]!="data"
-	load_jerjec = metadata["sample_type"]=="sig"
+    # get metadata first to determine branches to load
+    metadata = metadata_from_path(rootfile)
+    load_gen = metadata["sample_type"]!="data"
+    load_jerjec = metadata["sample_type"]=="sig"
 
     branches = BRANCHES[:]
     # Only available for simulation, not data
