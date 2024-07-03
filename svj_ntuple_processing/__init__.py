@@ -1574,15 +1574,22 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     a['ak8_lead_pt'] = ak.fill_none(ak.firsts(arr['JetsAK8.fCoordinates.fPt']), -1).to_numpy()
     a['ak8_lead_phi']= ak.fill_none(ak.firsts(arr['JetsAK8.fCoordinates.fPhi']), -1).to_numpy()
     a['ak8_lead_eta']= ak.fill_none(ak.firsts(arr['JetsAK8.fCoordinates.fEta']), -1).to_numpy()
-    #a['ak8_lead_pt'] = arr['JetsAK8.fCoordinates.fPt'][:,0].to_numpy()
-    #a['ak8_lead_phi'] = arr['JetsAK8.fCoordinates.fPhi'][:,0].to_numpy()
-    #a['ak8_lead_eta'] = arr['JetsAK8.fCoordinates.fEta'][:,0].to_numpy()
-    # a['ak8_subl_pt'] = arr['JetsAK8.fCoordinates.fPt'][:,1].to_numpy()
-    # a['ak8_subl_phi'] = arr['JetsAK8.fCoordinates.fPhi'][:,1].to_numpy()
-    # a['ak8_subl_eta'] = arr['JetsAK8.fCoordinates.fEta'][:,1].to_numpy()
+
+
     if load_mc:
         a['puweight'] = arr['puWeight'].to_numpy()
-    a['jetsak15_id'] = arr['JetsAK15_ID'][:,1].to_numpy()
+        a['JetsAK15_jecFactor']             = arr['JetsAK15_jecFactor'][:,1].to_numpy()
+        a['JetsAK15_jecUnc']                = arr['JetsAK15_jecUnc'][:,1].to_numpy()
+        a['JetsAK15_jerFactor']             = arr['JetsAK15_jerFactor'][:,1].to_numpy()
+        a['JetsAK15_jerFactorDown']         = arr['JetsAK15_jerFactorDown'][:,1].to_numpy()
+        a['JetsAK15_jerFactorUp']           = arr['JetsAK15_jerFactorUp'][:,1].to_numpy()
+        a['JetsAK15JECdown_jerFactor']      = arr['JetsAK15JECdown_jerFactor'][:,1].to_numpy()
+        a['JetsAK15JECdown_origIndex']      = arr['JetsAK15JECdown_origIndex'][:,1].to_numpy()
+        a['JetsAK15JECup_jerFactor']        = arr['JetsAK15JECup_jerFactor'][:,1].to_numpy()
+        a['JetsAK15JECup_origIndex']        = arr['JetsAK15JECup_origIndex'][:,1].to_numpy()
+        a['JetsAK15JERdown_origIndex']      = arr['JetsAK15JERdown_origIndex'][:,1].to_numpy()
+        a['JetsAK15JERup_origIndex']        = arr['JetsAK15JERup_origIndex'][:,1].to_numpy()
+        a['jetsak15_id'] = arr['JetsAK15_ID'][:,1].to_numpy()
 
     if save_scale_weights:
         a['scaleweights'] = arr['ScaleWeights'].to_numpy()
@@ -1626,17 +1633,6 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     # more branches
     a['JetsAK15_nConstituents']         = arr['JetsAK15_nConstituents'][:,1].to_numpy()
     a['JetsAK15_nConstituentsSoftDrop'] = arr['JetsAK15_nConstituentsSoftDrop'][:,1].to_numpy()
-    a['JetsAK15_jecFactor']             = arr['JetsAK15_jecFactor'][:,1].to_numpy()
-    a['JetsAK15_jecUnc']                = arr['JetsAK15_jecUnc'][:,1].to_numpy()
-    a['JetsAK15_jerFactor']             = arr['JetsAK15_jerFactor'][:,1].to_numpy()
-    a['JetsAK15_jerFactorDown']         = arr['JetsAK15_jerFactorDown'][:,1].to_numpy()
-    a['JetsAK15_jerFactorUp']           = arr['JetsAK15_jerFactorUp'][:,1].to_numpy()
-    a['JetsAK15JECdown_jerFactor']      = arr['JetsAK15JECdown_jerFactor'][:,1].to_numpy()
-    a['JetsAK15JECdown_origIndex']      = arr['JetsAK15JECdown_origIndex'][:,1].to_numpy()
-    a['JetsAK15JECup_jerFactor']        = arr['JetsAK15JECup_jerFactor'][:,1].to_numpy()
-    a['JetsAK15JECup_origIndex']        = arr['JetsAK15JECup_origIndex'][:,1].to_numpy()
-    a['JetsAK15JERdown_origIndex']      = arr['JetsAK15JERdown_origIndex'][:,1].to_numpy()
-    a['JetsAK15JERup_origIndex']        = arr['JetsAK15JERup_origIndex'][:,1].to_numpy()
 
     cols.arrays = a
     return cols
