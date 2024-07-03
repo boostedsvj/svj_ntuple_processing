@@ -1204,7 +1204,7 @@ class Columns:
         the_copy.arrays = {k: v[where] for k, v in self.arrays.items()}
         return the_copy
 
-    def save(self, outfile):
+    def save(self, outfile, force=False):
         import seutils
         do_stageout = False
         if seutils.path.has_protocol(outfile):
@@ -1236,7 +1236,7 @@ class Columns:
 
         if do_stageout:
             logger.info('Staging out %s -> %s', outfile, remote_outfile)
-            seutils.cp(outfile, remote_outfile)
+            seutils.cp(outfile, remote_outfile, force=force)
             os.remove(outfile)
 
     def to_numpy(self, features=None):
