@@ -637,6 +637,7 @@ def cr_filter_preselection(array):
     # MET filters
     for b in met_filters:
         a = a[a[b]!=0] # Pass events if not 0, is that correct?
+    cutflow['metfilter'] = len(a)
     cutflow['preselection'] = len(a)
 
     copy.array = a
