@@ -243,35 +243,35 @@ def metadata_from_path(path):
 
     # sig-specific info
     elif meta['sample_type']=='sig':
-        match = re.search(r'madpt(\d+)', path)
+        match = re.search(r'madpt(\d+)', sample_path)
         if match: meta['madpt'] = int(match.group(1))
 
-        match = re.search(r'MADPT(\d+)', path)
+        match = re.search(r'MADPT(\d+)', sample_path)
         if match: meta['madpt'] = int(match.group(1))
 
-        match = re.search(r'genjetpt(\d+)', path)
+        match = re.search(r'genjetpt(\d+)', sample_path)
         if match:
             meta['genjetpt'] = int(match.group(1))
 
-        match = re.search(r'mz(\d+)', path)
+        match = re.search(r'mz(\d+)', sample_path)
         if match: meta['mz'] = int(match.group(1))
 
-        match = re.search(r'mMed-(\d+)', path)
+        match = re.search(r'mMed-(\d+)', sample_path)
         if match: meta['mz'] = int(match.group(1))
 
-        match = re.search(r'mdark(\d+)', path)
+        match = re.search(r'mdark(\d+)', sample_path)
         if match: meta['mdark'] = int(match.group(1))
 
-        match = re.search(r'mDark-(\d+)', path)
+        match = re.search(r'mDark-(\d+)', sample_path)
         if match: meta['mdark'] = int(match.group(1))
 
-        match = re.search(r'rinv(\d\.\d+)', path)
+        match = re.search(r'rinv(\d\.\d+)', sample_path)
         if match: meta['rinv'] = float(match.group(1))
 
-        match = re.search(r'rinv-(\d\.\d+)', path)
+        match = re.search(r'rinv-(\d\.\d+)', sample_path)
         if match: meta['rinv'] = float(match.group(1))
 
-        match = re.search(r'rinv-(\dp\d+)', path)
+        match = re.search(r'rinv-(\dp\d+)', sample_path)
         if match: meta['rinv'] = float(match.group(1).replace('p','.'))
 
     return meta
@@ -937,7 +937,6 @@ def girthddt(mt, pt,rho,girth,weight):
     ptbin  = np.clip(1 + np.round(ptbin_float).astype(int), 0, nbins)
     rhobin = np.clip(1 + np.round(rhobin_float).astype(int), 0, nbins)
 
-    # print(ptbin, rhobin, len(ptbin), len(rhobin), len(girth), max(rhobin), max(ptbin), np.shape(girth_map_smooth))
     girthDDT = np.array([girth[i] - girth_map_smooth[rhobin[i]-1][ptbin[i]-1] for i in range(len(girth))])
     return girthDDT
 
@@ -1124,8 +1123,6 @@ def filter_hemveto(array):
     phi = a['Jets.fCoordinates.fPhi'][:,1].to_numpy()
     pt  = a['Jets.fCoordinates.fPt'][:,1].to_numpy()
 
-    print(array.year)
-
     a = a[veto_HEM(eta,phi,pt)]
 
     copy.array = a
@@ -1157,7 +1154,6 @@ def filter_at_least_n_jets(array, n=1, cone=8):
 def filter_at_least_n_muons(array, n=1):
     nmuons = ak.count(array.array['Muons.fCoordinates.fPt'], axis=-1)
     copy = array.copy()
-    print("num muons: ", nmuons)
     copy.array = copy.array[nmuons>=n]
     copy.cutflow['>={}muons'.format(n)] = len(copy.array)
     return copy
