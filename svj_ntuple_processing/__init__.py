@@ -346,14 +346,16 @@ class Arrays:
 
 
 @contextmanager
-def local_copy(remote):
+def local_copy(remote,bypass=False):
     """
     Creates a temporary local copy of a remote file
     """
     import seutils
     must_delete = False
     try:
-        if seutils.path.has_protocol(remote):
+        if bypass:
+            yield remote
+        elif seutils.path.has_protocol(remote):
             # File is remote, make local copy
             must_delete = True
             local = uid() + osp.splitext(remote)[1]
@@ -501,7 +503,7 @@ def open_root(rootfile, local=False, load_hlt=False):
     if load_hlt: branches.extend(BRANCHES_HLT)
     if load_jerjec: branches.extend(BRANCHES_JERJEC)
 
-    with local_copy(rootfile) if local else rootfile as fname:
+    with local_copy(rootfile,bypass=not local) as fname:
         tree = uproot.open(fname + ':TreeMaker2/PreSelection')
         arrays = Arrays(tree.arrays(branches))
 
