@@ -208,41 +208,41 @@ def metadata_from_path(path):
 
     pds = ['jetht','htmht','met','singlemuon']
     for pd in pds:
-        if samplepath.lower().startswith(pd):
-            metadata['sample_type'] = 'data'
-            metadata['data_type'] = pd
+        if sample_path.lower().startswith(pd):
+            meta['sample_type'] = 'data'
+            meta['data_type'] = pd
             break
 
     bkgs = ['qcd', 'ttjets', 'wjets', 'zjets']
     for bkg in bkgs:
         if sample_path.lower().startswith(bkg):
-            metadata['sample_type'] = 'bkg'
-            metadata['bkg_type'] = bkg
+            meta['sample_type'] = 'bkg'
+            meta['bkg_type'] = bkg
             break
 
-    if 'sample_type' not in metadata:
-        metadata['sample_type'] = 'sig'
+    if 'sample_type' not in meta:
+        meta['sample_type'] = 'sig'
 
     # bkg-specific info
-    if metadata['sample_type']=='bkg':
+    if meta['sample_type']=='bkg':
         if 'HT' in dirname:
             match = re.search(r'HT\-(\d+)[tT]o([\dInf]+)', dirname)
-            metadata['htbin'] = [float(match.group(1)), float(match.group(2))]
+            meta['htbin'] = [float(match.group(1)), float(match.group(2))]
         elif 'Pt' in dirname:
             match = re.search(r'Pt_(\d+)to([\dInf]+)', dirname)
-            metadata['ptbin'] = [float(match.group(1)), float(match.group(2))]
+            meta['ptbin'] = [float(match.group(1)), float(match.group(2))]
 
         if bkg_type == 'ttjets':
             if 'SingleLep' in dirname:
-                metadata['n_lepton_sample'] = 1
+                meta['n_lepton_sample'] = 1
             elif 'DiLep' in dirname:
-                metadata['n_lepton_sample'] = 2
+                meta['n_lepton_sample'] = 2
 
         if 'genMET' in dirname:
-            metadata['genmet_sample'] = True
+            meta['genmet_sample'] = True
 
     # sig-specific info
-    elif metadata['sample_type']=='sig':
+    elif meta['sample_type']=='sig':
         match = re.search(r'madpt(\d+)', path)
         if match: meta['madpt'] = int(match.group(1))
 
