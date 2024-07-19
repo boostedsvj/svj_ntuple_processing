@@ -225,20 +225,20 @@ def metadata_from_path(path):
 
     # bkg-specific info
     if meta['sample_type']=='bkg':
-        if 'HT' in dirname:
-            match = re.search(r'HT\-(\d+)[tT]o([\dInf]+)', dirname)
+        if 'HT' in sample_path:
+            match = re.search(r'HT\-(\d+)[tT]o([\dInf]+)', sample_path)
             meta['htbin'] = [float(match.group(1)), float(match.group(2))]
-        elif 'Pt' in dirname:
-            match = re.search(r'Pt_(\d+)to([\dInf]+)', dirname)
+        elif 'Pt' in sample_path:
+            match = re.search(r'Pt_(\d+)to([\dInf]+)', sample_path)
             meta['ptbin'] = [float(match.group(1)), float(match.group(2))]
 
         if bkg_type == 'ttjets':
-            if 'SingleLep' in dirname:
+            if 'SingleLep' in sample_path:
                 meta['n_lepton_sample'] = 1
-            elif 'DiLep' in dirname:
+            elif 'DiLep' in sample_path:
                 meta['n_lepton_sample'] = 2
 
-        if 'genMET' in dirname:
+        if 'genMET' in sample_path:
             meta['genmet_sample'] = True
 
     # sig-specific info
