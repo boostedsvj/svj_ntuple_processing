@@ -232,7 +232,7 @@ def metadata_from_path(path):
             match = re.search(r'Pt_(\d+)to([\dInf]+)', sample_path)
             meta['ptbin'] = [float(match.group(1)), float(match.group(2))]
 
-        if bkg_type == 'ttjets':
+        if meta['bkg_type'] == 'ttjets':
             if 'SingleLep' in sample_path:
                 meta['n_lepton_sample'] = 1
             elif 'DiLep' in sample_path:
