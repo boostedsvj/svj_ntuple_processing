@@ -265,13 +265,13 @@ def metadata_from_path(path):
         match = re.search(r'mDark-(\d+)', sample_path)
         if match: meta['mdark'] = int(match.group(1))
 
-        match = re.search(r'rinv(\d\.\d+)', sample_path)
+        match = re.search(r'rinv(\d(\.\d+)?)', sample_path)
         if match: meta['rinv'] = float(match.group(1))
 
-        match = re.search(r'rinv-(\d\.\d+)', sample_path)
+        match = re.search(r'rinv-(\d(\.\d+)?)', sample_path)
         if match: meta['rinv'] = float(match.group(1))
 
-        match = re.search(r'rinv-(\dp\d+)', sample_path)
+        match = re.search(r'rinv-(\d(p\d+)?)', sample_path)
         if match: meta['rinv'] = float(match.group(1).replace('p','.'))
 
     return meta
