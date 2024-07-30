@@ -5,7 +5,7 @@ import copy
 
 import numpy as np
 import uproot
-import awkward as ak
+import awkward1 as ak
 
 INCLUDE_DIR = osp.join(osp.abspath(osp.dirname(__file__)), "include")
 def version():
@@ -37,6 +37,82 @@ def setup_logger(name='svj'):
 logger = setup_logger()
 
 UL = True  # Global switch for UL vs PREL
+
+trgJetPt = {2018:[
+    # AK8PFJet triggers
+    'HLT_AK8PFJet500_v',
+    'HLT_AK8PFJet550_v',
+    # CaloJet
+    'HLT_CaloJet500_NoJetID_v',
+    'HLT_CaloJet550_NoJetID_v',
+    # PFJet and PFHT
+    'HLT_PFHT1050_v',
+    'HLT_PFJet500_v',
+    'HLT_PFJet550_v',
+    # Trim mass jetpt+HT
+    'HLT_AK8PFHT800_TrimMass50_v',
+    'HLT_AK8PFHT850_TrimMass50_v',
+    'HLT_AK8PFHT900_TrimMass50_v',
+    'HLT_AK8PFJet360_TrimMass30_v',
+    'HLT_AK8PFJet400_TrimMass30_v',
+    'HLT_AK8PFJet420_TrimMass30_v'],
+    2017:[
+    # AK8PFJet triggers
+    'HLT_AK8PFJet500_v',
+    'HLT_AK8PFJet550_v',
+    # CaloJet
+    'HLT_CaloJet500_NoJetID_v',
+    'HLT_CaloJet550_NoJetID_v',
+    # PFJet and PFHT
+    'HLT_PFHT1050_v',
+    'HLT_PFJet500_v',
+    'HLT_PFJet550_v',
+    # Trim mass jetpt+HT
+    'HLT_AK8PFHT800_TrimMass50_v',
+    'HLT_AK8PFHT850_TrimMass50_v',
+    'HLT_AK8PFHT900_TrimMass50_v',
+    'HLT_AK8PFJet360_TrimMass30_v'
+    'HLT_AK8PFJet400_TrimMass30_v',
+    'HLT_AK8PFJet420_TrimMass30_v'],
+    2016:[
+    'HLT_AK8PFHT700_TrimR0p1PT0p03Mass50_v',
+    'HLT_AK8PFJet360_TrimMass30_v',
+    'HLT_CaloJet500_NoJetID_v',
+    'HLT_PFHT900_v',
+    'HLT_PFJet450_v',
+    'HLT_PFJet500_v',
+    'HLT_PFHT800_v']
+        }
+
+trgHTMHT = {2017:[
+    'HLT_PFHT500_PFMET100_PFMHT100_IDTight_v',
+    'HLT_PFHT500_PFMET110_PFMHT110_IDTight_v',
+    'HLT_PFHT700_PFMET85_PFMHT85_IDTight_v',
+    'HLT_PFHT700_PFMET95_PFMHT95_IDTight_v',
+    'HLT_PFHT800_PFMET75_PFMHT75_IDTight_v',
+    'HLT_PFHT800_PFMET85_PFMHT85_IDTight_v'],
+    2016: [
+    'HLT_PFHT300_PFMET100_v',
+    'HLT_PFHT300_PFMET110_v']
+}
+trgHTMHT[2018] = trgJetPt[2018]
+
+Trgs = {'jetpt': trgJetPt, 'htmht': trgHTMHT}
+
+def trg_dec(arrays,jetpt):
+    """ to prevent double counting events that pass jetpt and htmht triggers
+    jetpt is the primary trigger, the double counting is avoided in htmht datasets
+    """
+    a = arrays.array
+    trg_ptind   = np.array([arrays.trigger_branch.index(t) for t in Trgs['jetpt'][arrays.year]])
+    trg_htind   = np.array([arrays.trigger_branch.index(t) for t in Trgs['htmht'][arrays.year]])
+    trg_jetpt = a['TriggerPass'].to_numpy()[:,trg_ptind]
+    trg_htmht = a['TriggerPass'].to_numpy()[:,trg_htind]
+    if jetpt==True: trg_dec = (trg_jetpt == 1).any(axis=-1)
+    else:           trg_dec = (trg_jetpt == 1).any(axis=-1) & (trg_htmht == 1).any(axis=-1)
+    return trg_dec
+
+
 
 triggers_2018 = {}
 triggers_2018['jetht'] = [
@@ -778,7 +854,7 @@ def filter_preselection(array, single_muon_cr=False):
     return copy
 
 
-def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=False, jetht=True):
+def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=False, jetpt=True):
     """ 
         ordered selection cuts to make cutflowtable
           should be run after the filter_stitch(array) function
@@ -805,8 +881,8 @@ def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=Fal
     a = a[a['JetsAK8.fCoordinates.fPt'][:,0]>500.] # leading>500
     cutflow['ak8jet.pt>500'] = len(a)'''
 
-    if jetht:     triggers_per_year = {2016: triggers_2016['jetht'], 2017: triggers_2017['jetht'], 2018: triggers_2018['jetht']}
-    if not jetht: triggers_per_year = {2016: triggers_2016['htmht'], 2017: triggers_2017['htmht'], 2018: triggers_2018['htmht']}
+    '''if jetht:     triggers_per_year = {2016: triggers_2016['jetht'], 2017: triggers_2017['jetht'], 2018: triggers_2018['jetht']}
+    if not jetht: triggers_per_year = {2016: triggers_2016['htmht'], 2017: triggers_2017['htmht'], 2018: triggers_2018['htmht']}'''
 
     if not single_muon_cr:
         # AK8Jet.pT>500
@@ -814,11 +890,15 @@ def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=Fal
         a = a[a['JetsAK8.fCoordinates.fPt'][:,0]>500.] # leading>500
         cutflow['ak8jet.pt>500'] = len(a)
 
-        # Triggers
+        '''# Triggers
         trigger_indices = np.array([copy.trigger_branch.index(t) for t in triggers_per_year[copy.year]])
         if len(a):
             trigger_decisions = a['TriggerPass'].to_numpy()[:,trigger_indices]
             a = a[(trigger_decisions == 1).any(axis=-1)]
+        cutflow['triggers'] = len(a)'''
+        # Triggers
+        trigger_decisions = trg_dec(copy,jetpt)]
+        a = a[trigger_decisions]
         cutflow['triggers'] = len(a)
 
     # positive ECF values
@@ -920,9 +1000,6 @@ def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=Fal
     cutflow['180<mt<650'] = len(a)
 
     # HEM issue
-     
-
-
     cutflow['ordered_preselection'] = len(a)
 
     copy.array = a
