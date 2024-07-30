@@ -38,7 +38,7 @@ logger = setup_logger()
 
 UL = True  # Global switch for UL vs PREL
 
-trgJetPt = {2018:[
+trgJetHT = {2018:[
     # AK8PFJet triggers
     'HLT_AK8PFJet500_v',
     'HLT_AK8PFJet550_v',
@@ -95,26 +95,26 @@ trgHTMHT = {2017:[
     'HLT_PFHT300_PFMET100_v',
     'HLT_PFHT300_PFMET110_v']
 }
-trgHTMHT[2018] = trgJetPt[2018]
+trgHTMHT[2018] = trgJetHT[2018]
 
-Trgs = {'jetpt': trgJetPt, 'htmht': trgHTMHT}
+Trgs = {'jetht': trgJetHT, 'htmht': trgHTMHT}
 
-def trg_dec(arrays,jetpt):
-    """ to prevent double counting events that pass jetpt and htmht triggers
-    jetpt is the primary trigger, the double counting is avoided in htmht datasets
+def trg_dec(arrays,jetht):
+    """ to prevent double counting events that pass (jet + ht) and (ht + met) triggers
+    jetht is the primary dataset, the double counting is avoided in htmht datasets
     """
     a = arrays.array
-    trg_ptind   = np.array([arrays.trigger_branch.index(t) for t in Trgs['jetpt'][arrays.year]])
-    trg_htind   = np.array([arrays.trigger_branch.index(t) for t in Trgs['htmht'][arrays.year]])
-    trg_jetpt = a['TriggerPass'].to_numpy()[:,trg_ptind]
-    trg_htmht = a['TriggerPass'].to_numpy()[:,trg_htind]
-    if jetpt==True: trg_dec = (trg_jetpt == 1).any(axis=-1)
-    else:           trg_dec = (trg_jetpt == 1).any(axis=-1) & (trg_htmht == 1).any(axis=-1)
+    trgjetht_indices   = np.array([arrays.trigger_branch.index(t) for t in Trgs['jetht'][arrays.year]])
+    trghtmht_indices   = np.array([arrays.trigger_branch.index(t) for t in Trgs['htmht'][arrays.year]])
+    trg_jetht = a['TriggerPass'].to_numpy()[:,trgjetht_indices]
+    trg_htmht = a['TriggerPass'].to_numpy()[:,trghtmht_indices]
+    if jetht==True: trg_dec = (trg_jetht == 1).any(axis=-1)
+    else:           trg_dec = (trg_jetht == 0).any(axis=-1) & (trg_htmht == 1).any(axis=-1)
     return trg_dec
 
 
 
-triggers_2018 = {}
+'''triggers_2018 = {}
 triggers_2018['jetht'] = [
     # AK8PFJet triggers
     'HLT_AK8PFJet500_v',
@@ -189,7 +189,7 @@ triggers_2016['jetht'] = [
 triggers_2016['htmht'] = [
     'HLT_PFHT300_PFMET100_v', 
     'HLT_PFHT300_PFMET110_v'
-]
+]'''
 
 
 #  ECAL DEAD CELL LOCATIONS
@@ -854,7 +854,7 @@ def filter_preselection(array, single_muon_cr=False):
     return copy
 
 
-def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=False, jetpt=True):
+def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=False, jetht=True):
     """ 
         ordered selection cuts to make cutflowtable
           should be run after the filter_stitch(array) function
@@ -897,7 +897,7 @@ def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=Fal
             a = a[(trigger_decisions == 1).any(axis=-1)]
         cutflow['triggers'] = len(a)'''
         # Triggers
-        trigger_decisions = trg_dec(copy,jetpt)]
+        trigger_decisions = trg_dec(copy,jetht)]
         a = a[trigger_decisions]
         cutflow['triggers'] = len(a)
 
