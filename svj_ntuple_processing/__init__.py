@@ -99,7 +99,7 @@ trgHTMHT[2018] = trgJetHT[2018]
 
 Trgs = {'jetht': trgJetHT, 'htmht': trgHTMHT}
 
-def trg_dec(arrays,jetht):
+def trg_dec(arrays,jetht,load_mc):
     """ to prevent double counting events that pass (jet + ht) and (ht + met) triggers
     jetht is the primary dataset, the double counting is avoided in htmht datasets
     """
@@ -108,8 +108,11 @@ def trg_dec(arrays,jetht):
     trghtmht_indices   = np.array([arrays.trigger_branch.index(t) for t in Trgs['htmht'][arrays.year]])
     trg_jetht = a['TriggerPass'].to_numpy()[:,trgjetht_indices]
     trg_htmht = a['TriggerPass'].to_numpy()[:,trghtmht_indices]
-    if jetht==True: trg_dec = (trg_jetht == 1).any(axis=-1)
-    else:           trg_dec = (trg_jetht == 0).any(axis=-1) & (trg_htmht == 1).any(axis=-1)
+
+    if load_mc==True: trg_dec = (trg_jetpt == 1).any(axis=-1) | (trg_htmht == 1).any(axis=-1)
+    else:
+        if jetht==True: trg_dec = (trg_jetht == 1).any(axis=-1)
+        else:           trg_dec = (trg_jetht == 0).any(axis=-1) & (trg_htmht == 1).any(axis=-1)
     return trg_dec
 
 
@@ -854,7 +857,7 @@ def filter_preselection(array, single_muon_cr=False):
     return copy
 
 
-def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=False, jetht=True):
+def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=True, jetht=True, load_mc=True):
     """ 
         ordered selection cuts to make cutflowtable
           should be run after the filter_stitch(array) function
@@ -896,8 +899,9 @@ def filter_preselection_ordered(array, single_muon_cr=False, deadcells_study=Fal
             trigger_decisions = a['TriggerPass'].to_numpy()[:,trigger_indices]
             a = a[(trigger_decisions == 1).any(axis=-1)]
         cutflow['triggers'] = len(a)'''
+
         # Triggers
-        trigger_decisions = trg_dec(copy,jetht)]
+        trigger_decisions = trg_dec(copy,jetht,load_mc)
         a = a[trigger_decisions]
         cutflow['triggers'] = len(a)
 
