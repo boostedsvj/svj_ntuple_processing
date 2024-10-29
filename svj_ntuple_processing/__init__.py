@@ -396,9 +396,9 @@ BRANCHES = [
     'TriggerPass',
     'JetsAK15_ID',
     'NMuons', 'NElectrons',
-    'HBHENoiseFilter', 'HBHEIsoNoiseFilter', 'eeBadScFilter',
-    'ecalBadCalibFilter',
-    'BadPFMuonFilter', 'BadChargedCandidateFilter', 'globalSuperTightHalo2016Filter',
+    'HBHENoiseFilter', 'HBHEIsoNoiseFilter', 'eeBadScFilter', 'PrimaryVertexFilter',
+    'ecalBadCalibFilter', 'hfNoisyHitsFilter',
+    'BadPFMuonFilter', 'BadPFMuonDzFilter', 'globalSuperTightHalo2016Filter',
     # highMET events
     'CaloMET', 'PFCaloMETRatio',
     # Muon stuff
