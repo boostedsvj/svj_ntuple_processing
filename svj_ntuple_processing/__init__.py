@@ -117,14 +117,16 @@ def get_pd_triggers(pd,year):
             good_triggers += val
     return good_triggers, bad_triggers
 
+# following the order from https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#Run_2_recommendations
 met_filters = [
+    'PrimaryVertexFilter',
+    'globalSuperTightHalo2016Filter',
     'HBHENoiseFilter',
     'HBHEIsoNoiseFilter',
+    'BadPFMuonFilter',
+    'BadPFMuonDzFilter',
     'eeBadScFilter',
     'ecalBadCalibFilter',
-    'BadPFMuonFilter',
-    'BadChargedCandidateFilter',
-    'globalSuperTightHalo2016Filter',
 ]
 
 #  ECAL DEAD CELL LOCATIONS
@@ -742,6 +744,10 @@ def filter_preselection(array, single_muon_cr=False):
     for b in met_filters:
         a = a[a[b]!=0] # Pass events if not 0, is that correct?
     cutflow['metfilter'] = len(a)
+
+    # test hf filter separately
+    a = a[a['hfNoisyHitsFilter']!=0]
+    cutflow['hffilter'] = len(a)
 
     # At least 2 AK4 jets --> deadcells study
     a = a[ak.count(a['Jets.fCoordinates.fPt'], axis=-1) >= 2]
