@@ -647,7 +647,7 @@ def cr_filter_preselection(array):
     return copy
 
 
-def filter_preselection(array, single_muon_cr=False):
+def filter_preselection(array, single_muon_cr=False, skip_cut=None):
     """Apply the preselection on the array.
     cuts now in cutflowtable order by default.
     should be run after the filter_stitch(array) function (?)
@@ -657,6 +657,8 @@ def filter_preselection(array, single_muon_cr=False):
             veto. Disables the AK8Jet.pT cut and the triggers, since this mode is used
             to study the trigger efficiencies.
     """
+    if skip_cut is None:
+        skip_cut = []
     copy = array.copy()
     a = copy.array
     cutflow = copy.cutflow
@@ -701,9 +703,10 @@ def filter_preselection(array, single_muon_cr=False):
     cutflow['subl_ecf>0'] = len(a)
 
     # rtx>1.1
-    rtx = np.sqrt(1. + a['MET'].to_numpy() / a['JetsAK15.fCoordinates.fPt'][:,1].to_numpy())
-    a = a[rtx>1.1]
-    cutflow['rtx>1.1'] = len(a)
+    if 'rtx' not in skip_cut:
+        rtx = np.sqrt(1. + a['MET'].to_numpy() / a['JetsAK15.fCoordinates.fPt'][:,1].to_numpy())
+        a = a[rtx>1.1]
+        cutflow['rtx>1.1'] = len(a)
 
     # muon pt < 1500 filter to avoid highMET events
     a = a[~ak.any(a['Muons.fCoordinates.fPt'] > 1500., axis=-1)]
@@ -766,9 +769,10 @@ def filter_preselection(array, single_muon_cr=False):
     cutflow['ecaldeadcells'] = len(a)
 
     # abs(metdphi)<1.5
-    METDphi = calc_dphi(a['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy(), a['METPhi'].to_numpy())
-    a = a[abs(METDphi)<1.5]
-    cutflow['abs(metdphi)<1.5'] = len(a)
+    if 'metdphi' not in skip_cut:
+        METDphi = calc_dphi(a['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy(), a['METPhi'].to_numpy())
+        a = a[abs(METDphi)<1.5]
+        cutflow['abs(metdphi)<1.5'] = len(a)
 
     # MT window 180 -- 650 GeV
     pt = a['JetsAK15.fCoordinates.fPt'][:,1].to_numpy()
