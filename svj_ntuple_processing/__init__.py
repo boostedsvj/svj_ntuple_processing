@@ -796,47 +796,11 @@ filter_preselection = EventSelector("preselection", [
 def filter_preselection_minus_one(cut_type):
     # The selection syntax would be something like:
     # filter_preselection_minus_one("metdphi")(array)
-    assert any([m.endswith(cut_type) for m in filter_preselection.filter_list])
+    assert any([m.__name__ == f"selected_{cut_type}" for m in filter_preselection.filter_list])
     return EventSelector(
-            name=f"preselection_minus_{cut_type}",
-            [m for m in filter_preselection.filter_list if m.__name__.endswith(cut_type)]
+        name=f"preselection_minus_{cut_type}",
+        [m for m in filter_preselection.filter_list if m.__name__ != f"select_{cut_type}"]
     )
-
-filter_muon_cr = EventSelector("preselection_muon_cr", [
-    select_jet_topology,
-    select_positive_ecf,
-    select_rt,
-    select_single_muon,
-    select_metdphi,
-    select_metfilter_standard,
-    select_highpt_muon_veto,
-    select_metfilter_custom,
-    select_mt
-])
-
-
-cr_filter_preselection = EventSelector("cr_filter_preselection", [
-    select_jet_topology,
-    select_trigger,
-    select_trigger_object,
-    select_muon_veto,
-    select_electron_veto,
-    select_metfilter_standard,
-    select_deadcell_prerequisite,
-])
-
-
-selection_deadcells = EventSelector("preselection_deadcellstudy", [
-    select_jet_topology,
-    select_trigger_object,
-    select_positive_ecf,
-    select_rt,
-    select_highpt_muon_veto,
-    select_metfilter_standard,
-    select_metdphi,
-    select_deadcell_prerequisite,
-    select_mt,
-])
 
 def filter_hemveto(array):
     """
