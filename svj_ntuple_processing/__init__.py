@@ -698,6 +698,7 @@ def select_metfilter_standard(arrays:Arrays):
         'BadPFMuonDzFilter',
         'eeBadScFilter',
         'ecalBadCalibFilter',
+        'hfNoisyHitsFilter'
     ]
     for f in met_filters:
         arrays.array = arrays.array[arrays.array[b]!=0] # Pass events if not 0, is that correct?
@@ -727,9 +728,6 @@ def select_deadcell_prerequisite(arrays: Arrays):
 
 def select_metfilter_custom(arrays:Arrays):
     a = arrays.array
-    # test hf filter separately
-    a = a[a['hfNoisyHitsFilter']!=0]
-    arrays.cutflow['hffilter'] = len(a)
 
     # At least 2 AK4 jets --> required for dead cell determination
     a = a[ak.count(a['Jets.fCoordinates.fPt'], axis=-1) >= 2]
