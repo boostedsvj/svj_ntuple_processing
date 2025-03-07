@@ -587,6 +587,13 @@ def select_jet_topology(arrays: Arrays):
     # subleading eta < 2.4 eta
     arrays.array = arrays.array[np.abs(arrays.array['JetsAK15.fCoordinates.fEta'][:,1])<2.4]
     arrays.cutflow['subl_eta<2.4'] = len(arrays.array)
+    # ECF > 0
+    for ecf in [
+        'JetsAK15_ecfC2b1', 'JetsAK15_ecfD2b1',
+        'JetsAK15_ecfM2b1', 'JetsAK15_ecfN2b2',
+        ]:
+        arrays.array = arrays.array[arrays.array[ecf][:,1]>0.]
+    arrays.cutflow['subl_ecf>0'] = len(arrays.array)
     return arrays
 
 
@@ -617,14 +624,6 @@ def select_trigger_object(arrays:Array):
     return arrays
 
 
-def select_positive_ecf(arrays:Arrays):
-    for ecf in [
-        'JetsAK15_ecfC2b1', 'JetsAK15_ecfD2b1',
-        'JetsAK15_ecfM2b1', 'JetsAK15_ecfN2b2',
-        ]:
-        arrays.array = arrays.array[arrays.array[ecf][:,1]>0.]
-    arrays.cutflow['subl_ecf>0'] = len(arrays.array)
-    return arrays
 
 
 def select_rt(arrays: Arrays):
@@ -780,7 +779,6 @@ filter_preselection = EventSelector("preselection", [
     select_jet_topology,
     select_trigger,
     select_trigger_object,
-    select_positive_ecf,
     select_rt,
     select_muon_veto,
     select_electron_veto,
