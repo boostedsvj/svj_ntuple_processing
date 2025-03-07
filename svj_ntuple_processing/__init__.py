@@ -838,7 +838,23 @@ selection_deadcells = EventSelector("preselection_deadcellstudy", [
     select_mt,
 ])
 
+def filter_hemveto(array):
+    """
+    Filter to cut away AK4 jets within HEM area
+    only applicable for 2018 posthem era
+    """
+    copy = array.copy()
+    a = copy.array
 
+    eta = a['Jets.fCoordinates.fEta'][:,1].to_numpy()
+    phi = a['Jets.fCoordinates.fPhi'][:,1].to_numpy()
+    pt  = a['Jets.fCoordinates.fPt'][:,1].to_numpy()
+
+    a = a[veto_HEM(eta,phi,pt)]
+
+    copy.array = a
+    copy.cut('hem_veto')
+    return copy
 
 def rhoddt_windowcuts(mt, pt, rho):
     cuts = (mt>200) & (mt<1000) & (pt>110) & (pt<1500) & (rho>-4) & (rho<0)
