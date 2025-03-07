@@ -636,13 +636,13 @@ def select_rt(arrays: Arrays):
     return arrays
 
 
-def select_single_muon(copy Arrays):
+def select_single_muon(arrays: Arrays):
     # apply preselection - muon veto + muon selection
     # (used medium ID + pt > 50 GeV + iso < 0.2 in EXO-19-020,
     #  see AN-19-061 section 4.2)
     # require the selected muon to match with the HLT muon object
     # (which should be saved in the SingleMuon ntuples) by ΔR < 0.2
-    a = copy.array
+    a = arrays.array
     a = a[a['NMuons']>=1]
     if len(a):
             a = a[
@@ -658,11 +658,11 @@ def select_single_muon(copy Arrays):
                 a['HLTMuonObjects.fCoordinates.fPt'][:,0].to_numpy(),
                 a['HLTMuonObjects.fCoordinates.fEta'][:,0].to_numpy(),
                 ) < .2]
-    copy.cutflow['nmuons=1'] = len(a)
+    arrays.cutflow['nmuons=1'] = len(a)
     a = a[a['NElectrons']==0]
-    copy.cutflow['nelectrons=0'] = len(a)
-    copy.array = a
-    return copy
+    arrays.cutflow['nelectrons=0'] = len(a)
+    arrays.array = a
+    return arrays
 
 
 def select_muon_veto(arrays:Arrays):
