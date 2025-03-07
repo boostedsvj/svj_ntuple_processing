@@ -792,7 +792,7 @@ filter_preselection = EventSelector("preselection", [
 def filter_preselection_minus_one(cut_type):
     # The selection syntax would be something like:
     # filter_preselection_minus_one("metdphi")(array)
-    assert any([m.__name__ == f"selected_{cut_type}" for m in filter_preselection.filter_list])
+    assert any([m.__name__ == f"select_{cut_type}" for m in filter_preselection.filter_list])
     return EventSelector(
         name=f"preselection_minus_{cut_type}",
         [m for m in filter_preselection.filter_list if m.__name__ != f"select_{cut_type}"]
