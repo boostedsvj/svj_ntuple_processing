@@ -577,115 +577,103 @@ def veto_HEM(eta,phi,pt):
     hemveto = np.bitwise_not(hem(eta,phi,pt))
     return hemveto
 
-def select_jet_topology(arrays: Arrays):
+def select_jet_topology(array: ak.Array, cutflow: OrderedDict):
     # At least 2 AK15 jets
-    arrays.array = arrays.array[ak.count(arrays.array['JetsAK15.fCoordinates.fPt'], axis=-1) >= 2]
-    arrays.cutflow['n_ak15jets>=2'] = len(arrays.array)
+    array = array[ak.count(array['JetsAK15.fCoordinates.fPt'], axis=-1) >= 2]
+    cutflow['n_ak15jets>=2'] = len(array)
     # jetid for AK15 jets
-    arrays.array = arrays.array[arrays.array['JetsAK15_ID'][:,1]>0]
-    arrays.cutflow['ak15jets_id'] = len(arrays.array)
+    array = array[array['JetsAK15_ID'][:,1]>0]
+    cutflow['ak15jets_id'] = len(array)
     # subleading eta < 2.4 eta
-    arrays.array = arrays.array[np.abs(arrays.array['JetsAK15.fCoordinates.fEta'][:,1])<2.4]
-    arrays.cutflow['subl_eta<2.4'] = len(arrays.array)
+    array = array[np.abs(array['JetsAK15.fCoordinates.fEta'][:,1])<2.4]
+    cutflow['subl_eta<2.4'] = len(array)
     # ECF > 0
     for ecf in [
         'JetsAK15_ecfC2b1', 'JetsAK15_ecfD2b1',
         'JetsAK15_ecfM2b1', 'JetsAK15_ecfN2b2',
-        ]:
-        arrays.array = arrays.array[arrays.array[ecf][:,1]>0.]
-    arrays.cutflow['subl_ecf>0'] = len(arrays.array)
-    return arrays
+    ]:
+        array = array[array[ecf][:,1]>0.]
+    cutflow['subl_ecf>0'] = len(array)
+    return array, cutflow
 
 
-def select_trigger(arrays:Arrays):
-    a = arrays.array
+def select_trigger(array: ak.Array, cutflow: OrderedDict):
     # Triggers
     good_triggers, bad_triggers = arrays.triggers
     good_indices = np.array([arrays.trigger_branch.index(t) for t in good_triggers])
     bad_indices = np.array([arrays.trigger_branch.index(t) for t in bad_triggers])
-    if len(a):
-        good_decisions = a['TriggerPass'].to_numpy()[:,good_indices]
-        a = a[(good_decisions == 1).any(axis=-1)]
+    if len(array):
+        good_decisions = array['TriggerPass'].to_numpy()[:,good_indices]
+        array = array[(good_decisions == 1).any(axis=-1)]
         # only keep events that fail the bad triggers
         if len(bad_triggers):
-            bad_decisions = a['TriggerPass'].to_numpy()[:,bad_indices]
-            a = a[np.logical_not((bad_decisions == 1).any(axis=-1))]
-    arrays.cutflow['triggers'] = len(a)
-    arrays.array = a
-    return arrays
+            bad_decisions = array['TriggerPass'].to_numpy()[:,bad_indices]
+            array = array[np.logical_not((bad_decisions == 1).any(axis=-1))]
+    cutflow['triggers'] = len(array)
+    return array, cutflow
 
-def select_trigger_object(arrays:Array):
+def select_trigger_object(array: ak.Array, cutflow: OrderedDict):
     # AK8 jetpt>500
-    a = arrays.array
-    a = a[ak.count(a['JetsAK8.fCoordinates.fPt'], axis=-1)>=1] # At least one jet
-    a = a[a['JetsAK8.fCoordinates.fPt'][:,0]>500.] # leading>500
-    arrays.cutflow['ak8jet.pt>500'] = len(a)
-    arrays.array = a
-    return arrays
+    array = array[ak.count(array['JetsAK8.fCoordinates.fPt'], axis=-1)>=1] # At least one jet
+    array = array[array['JetsAK8.fCoordinates.fPt'][:,0]>500.] # leading>500
+    cutflow['ak8jet.pt>500'] = len(array)
+    return array, cutflow
 
-
-
-
-def select_rt(arrays: Arrays):
+def select_rt(array: ak.Array, cutflow: OrderedDict):
     # rtx>1.1
-    a = arrays.array
-    rtx = np.sqrt(1. + a['MET'].to_numpy() / a['JetsAK15.fCoordinates.fPt'][:,1].to_numpy())
-    a = a[rtx>1.1]
-    arrays.cutflow['rtx>1.1'] = len(a)
-    arrays.array = a
-    return arrays
+    rtx = np.sqrt(1. + array['MET'].to_numpy() / array['JetsAK15.fCoordinates.fPt'][:,1].to_numpy())
+    array = array[rtx>1.1]
+    cutflow['rtx>1.1'] = len(array)
+    return array, cutflow
 
 
-def select_single_muon(arrays: Arrays):
+def select_single_muon(array: ak.Array, cutflow: OrderedDict):
     # apply preselection - muon veto + muon selection
     # (used medium ID + pt > 50 GeV + iso < 0.2 in EXO-19-020,
     #  see AN-19-061 section 4.2)
     # require the selected muon to match with the HLT muon object
     # (which should be saved in the SingleMuon ntuples) by ΔR < 0.2
-    a = arrays.array
-    a = a[a['NMuons']>=1]
-    if len(a):
-            a = a[
-                (a['Muons_mediumID'][:,0])
-                & (a['Muons.fCoordinates.fPt'][:,0]>50.)
-                & (a['Muons_iso'][:,0]<.2)
+    array = arrays.array
+    array = array[array['NMuons']>=1]
+    if len(array):
+            array = array[
+                (array['Muons_mediumID'][:,0])
+                & (array['Muons.fCoordinates.fPt'][:,0]>50.)
+                & (array['Muons_iso'][:,0]<.2)
                 ]
-    if len(a):
-            a = a[ak.count(a['HLTMuonObjects.fCoordinates.fPt'], axis=-1) >= 1]
-            a = a[calc_dr(
-                a['Muons.fCoordinates.fPt'][:,0].to_numpy(),
-                a['Muons.fCoordinates.fEta'][:,0].to_numpy(),
-                a['HLTMuonObjects.fCoordinates.fPt'][:,0].to_numpy(),
-                a['HLTMuonObjects.fCoordinates.fEta'][:,0].to_numpy(),
+    if len(array):
+            array = array[ak.count(array['HLTMuonObjects.fCoordinates.fPt'], axis=-1) >= 1]
+            array = array[calc_dr(
+                array['Muons.fCoordinates.fPt'][:,0].to_numpy(),
+                array['Muons.fCoordinates.fEta'][:,0].to_numpy(),
+                array['HLTMuonObjects.fCoordinates.fPt'][:,0].to_numpy(),
+                array['HLTMuonObjects.fCoordinates.fEta'][:,0].to_numpy(),
                 ) < .2]
-    arrays.cutflow['nmuons=1'] = len(a)
-    a = a[a['NElectrons']==0]
-    arrays.cutflow['nelectrons=0'] = len(a)
-    arrays.array = a
-    return arrays
+    cutflow['nmuons=1'] = len(array)
+    array = array[array['NElectrons']==0]
+    cutflow['nelectrons=0'] = len(array)
+    return array, cutflow
 
 
-def select_muon_veto(arrays:Arrays):
+def select_muon_veto(array: ak.Array, cutflow: OrderedDict):
     # lepton vetoes
-    arrays.array = arrays.array[arrays.array['NMuons']==0]
-    arrays.cutflow['nmuons=0'] = len(arrays.array)
-    return arrays
+    array = array[array['NMuons']==0]
+    cutflow['nmuons=0'] = len(array)
+    return array, cutflow
 
-def select_electron_veto(arrays:Arrays):
-    arrays.array = arrays.array[arrays.array['NElectrons']==0]
-    arrays.cutflow['nelectrons=0'] = len(arrays.array)
-    return arrays
+def select_electron_veto(array: ak.Array, cutflow:OrderedDict):
+    array = array[array['NElectrons']==0]
+    cutflow['nelectrons=0'] = len(array)
+    return array, cutflow
 
 
-def select_metdphi(arrays:Arrays):
-    a = arrays.array
-    METDphi = calc_dphi(a['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy(), a['METPhi'].to_numpy())
-    a = a[abs(METDphi)<1.5]
-    arrays.cutflow['abs(metdphi)<1.5'] = len(a)
-    arrays.array = a
-    return arrays
+def select_metdphi(array: ak.Array, cutflow: OrderedDict):
+    METDphi = calc_dphi(array['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy(), array['METPhi'].to_numpy())
+    array = array[abs(METDphi)<1.5]
+    cutflow['abs(metdphi)<1.5'] = len(array)
+    return array, cutflow
 
-def select_metfilter_standard(arrays:Arrays):
+def select_metfilter_standard(array: ak.Array, cutflow: OrderedDict):
     # MET filters
     # following the order from https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#Run_2_recommendations
     met_filters = [
@@ -700,65 +688,48 @@ def select_metfilter_standard(arrays:Arrays):
         'hfNoisyHitsFilter'
     ]
     for f in met_filters:
-        arrays.array = arrays.array[arrays.array[b]!=0] # Pass events if not 0, is that correct?
-    arrays.cutflow['metfilter'] = len(arrays.array)
-    return arrays
+        array = array[array[f]!=0] # Pass events if not 0, is that correct?
+    cutflow['metfilter'] = len(array)
+    return array, cutflow
 
 
-def select_highpt_muon_veto(arrays:Arrays):
+def select_highpt_muon_veto(array: ak.Array, cutflow: OrderedDict):
     # muon pt < 1500 filter to avoid highMET events
-    arrays.array = arrays.array[~ak.any(arrays.array['Muons.fCoordinates.fPt'] > 1500., axis=-1)]
-    arrays.cutflow['muonpt<1500'] = len(arrays.array)
-    return arrays
+    array = array[~ak.any(array['Muons.fCoordinates.fPt'] > 1500., axis=-1)]
+    cutflow['muonpt<1500'] = len(array)
+    return array, cutflow
 
 
-def select_deadcell_prerequisite(arrays: Arrays):
-    # TODO: This selection was inconsistent between various items
-    # Below was the version found in selection_deadcells
-    arrays.array = arrays.array[ak.count(arrays.array['Jets.fCoordinates.fPt'], axis=-1) >= 2]
-    arrays.cutflow['n_ak4jets>=2'] = len(arrays.array)
-    return arrays
-
-    # ALternate function found in cr_filter_preselection
-    a = a[np.abs(a['Jets.fCoordinates.fEta'][:,0])<2.4]
-    a = a[np.abs(a['Jets.fCoordinates.fEta'][:,1])<2.4]
-    cutflow['ak4j1j2_eta<2.4'] = len(a)
-
-
-def select_metfilter_custom(arrays:Arrays):
-    a = arrays.array
-
+def select_metfilter_custom(array:Array, cutflow:OrderedDict):
     # At least 2 AK4 jets --> required for dead cell determination
-    a = a[ak.count(a['Jets.fCoordinates.fPt'], axis=-1) >= 2]
-    arrays.cutflow['n_ak4jets>=2'] = len(a)
+    array = array[ak.count(array['Jets.fCoordinates.fPt'], axis=-1) >= 2]
+    cutflow['n_ak4jets>=2'] = len(array)
 
     # Filter out jets that are too close to dead cells
-    ak4jet_eta = a['Jets.fCoordinates.fEta'][:,1].to_numpy()
-    ak4jet_phi = a['Jets.fCoordinates.fPhi'][:,1].to_numpy()
+    ak4jet_eta = array['Jets.fCoordinates.fEta'][:,1].to_numpy()
+    ak4jet_phi = array['Jets.fCoordinates.fPhi'][:,1].to_numpy()
     dead_cell_mask = veto_phi_spike(
        dataqcd_eta_ecaldead[array.year], dataqcd_phi_ecaldead[array.year],
        ak4jet_eta, ak4jet_phi,
        rad = 0.01
        )
 
-    a = a[dead_cell_mask]
-    arrays.cutflow['ecaldeadcells'] = len(a)
-    arrays.array = a
-    return arrays
+    array = array[dead_cell_mask]
+    cutflow['ecaldeadcells'] = len(array)
+    return array, cutflow
 
-def select_mt(arrays:Arrays):
-    a = arrays.array
-    pt = a['JetsAK15.fCoordinates.fPt'][:,1].to_numpy()
-    eta = a['JetsAK15.fCoordinates.fEta'][:,1].to_numpy()
-    phi = a['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy()
-    e = a['JetsAK15.fCoordinates.fE'][:,1].to_numpy()
+def select_mt(array: ak.Array, cutflow:OrderedDict):
+    pt = array['JetsAK15.fCoordinates.fPt'][:,1].to_numpy()
+    eta = array['JetsAK15.fCoordinates.fEta'][:,1].to_numpy()
+    phi = array['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy()
+    e = array['JetsAK15.fCoordinates.fE'][:,1].to_numpy()
 
-    met = a['MET'].to_numpy()
-    metphi = a['METPhi'].to_numpy()
+    met = array['MET'].to_numpy()
+    metphi = array['METPhi'].to_numpy()
     mt = calculate_mt(pt, eta, phi, e, met, metphi)
     # compute but don't apply
-    arrays.cutflow['180<mt<650'] = np.sum((mt>180) & (mt<650))
-    return arrays
+    cutflow['180<mt<650'] = np.sum((mt>180) & (mt<650))
+    return array, cutflow
 
 
 class EventSelector():
@@ -769,7 +740,7 @@ class EventSelector():
     def __call__(self, arrays:Arrays):
         copy = arrays.copy() # Operate on the copy
         for filter in filter_list:
-            copy = filter(copy)
+            copy.array, copy.cutflow = filter(copy.array, copy.cutflow)
         copy.cutflow[self.name] = len(copy.array)
         logger.debug('cutflow:\n%s', pprint.pformat(copy.cutflow))
         return copy
