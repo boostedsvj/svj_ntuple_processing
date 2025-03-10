@@ -2,6 +2,8 @@ import os, os.path as osp, logging, pprint, uuid, re
 from contextlib import contextmanager
 from collections import OrderedDict
 import copy
+from typing import Callable, List, Tuple
+import inspect
 
 import numpy as np
 import uproot
@@ -597,11 +599,11 @@ def select_jet_topology(array: ak.Array, cutflow: OrderedDict):
     return array, cutflow
 
 
-def select_trigger(array: ak.Array, cutflow: OrderedDict):
+def select_trigger(array: ak.Array, cutflow: OrderedDict, triggers: Tuple[List[str],List[str]], trigger_branch:List[str]):
     # Triggers
-    good_triggers, bad_triggers = arrays.triggers
-    good_indices = np.array([arrays.trigger_branch.index(t) for t in good_triggers])
-    bad_indices = np.array([arrays.trigger_branch.index(t) for t in bad_triggers])
+    good_triggers, bad_triggers = triggers
+    good_indices = np.array([trigger_branch.index(t) for t in good_triggers])
+    bad_indices = np.array([trigger_branch.index(t) for t in bad_triggers])
     if len(array):
         good_decisions = array['TriggerPass'].to_numpy()[:,good_indices]
         array = array[(good_decisions == 1).any(axis=-1)]
@@ -700,7 +702,7 @@ def select_highpt_muon_veto(array: ak.Array, cutflow: OrderedDict):
     return array, cutflow
 
 
-def select_metfilter_custom(array:Array, cutflow:OrderedDict):
+def select_metfilter_custom(array: ak.Array, cutflow:OrderedDict, year: int):
     # At least 2 AK4 jets --> required for dead cell determination
     array = array[ak.count(array['Jets.fCoordinates.fPt'], axis=-1) >= 2]
     cutflow['n_ak4jets>=2'] = len(array)
@@ -709,10 +711,10 @@ def select_metfilter_custom(array:Array, cutflow:OrderedDict):
     ak4jet_eta = array['Jets.fCoordinates.fEta'][:,1].to_numpy()
     ak4jet_phi = array['Jets.fCoordinates.fPhi'][:,1].to_numpy()
     dead_cell_mask = veto_phi_spike(
-       dataqcd_eta_ecaldead[array.year], dataqcd_phi_ecaldead[array.year],
+       dataqcd_eta_ecaldead[year], dataqcd_phi_ecaldead[year],
        ak4jet_eta, ak4jet_phi,
        rad = 0.01
-       )
+    )
 
     array = array[dead_cell_mask]
     cutflow['ecaldeadcells'] = len(array)
@@ -739,11 +741,27 @@ class EventSelector():
 
     def __call__(self, arrays:Arrays):
         copy = arrays.copy() # Operate on the copy
-        for filter in filter_list:
-            copy.array, copy.cutflow = filter(copy.array, copy.cutflow)
+        for filter in self.filter_list:
+            add_args = self._get_add_args(copy, filter)
+            copy.array, copy.cutflow = filter(copy.array, copy.cutflow, **add_args)
         copy.cutflow[self.name] = len(copy.array)
         logger.debug('cutflow:\n%s', pprint.pformat(copy.cutflow))
         return copy
+
+    @classmethod
+    def _get_add_args(cls, arrays:Arrays, method: Callable):
+        """Getting additional filter methods input from callable inspect method"""
+        params = inspect.signature(method).parameters
+        add_args = {}
+        for index, name in enumerate(params):
+            if index == 0:
+                assert name == "array", "First argument for filter function should be array"
+            elif index == 1:
+                assert name == "cutflow", "Second argument should be cutflow"
+            else:
+                assert hasattr(arrays, name), f"Method requested parameter {name}, which does not exist for Arrays"
+                add_args[name] = getattr(arrays,name)
+        return add_args
 
 
 filter_preselection = EventSelector("preselection", [
@@ -766,7 +784,7 @@ def filter_preselection_minus_one(cut_type):
     assert any([m.__name__ == f"select_{cut_type}" for m in filter_preselection.filter_list])
     return EventSelector(
         name=f"preselection_minus_{cut_type}",
-        [m for m in filter_preselection.filter_list if m.__name__ != f"select_{cut_type}"]
+        filter_list=[m for m in filter_preselection.filter_list if m.__name__ != f"select_{cut_type}"]
     )
 
 def filter_hemveto(array):
