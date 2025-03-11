@@ -1319,6 +1319,49 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
 # Backward compatibility
 cr_feature_columns = bdt_feature_columns
 
+def nminus_one_columns(array, skip_cut, load_mc=False):
+    """
+    Takes an Array object, calculates needed columns for the bdt training.
+    """
+    cols = Columns()
+    cols.metadata = array.metadata.copy()
+    cols.cutflow = array.cutflow.copy()
+    # Prepare features
+    arr = array.array
+    a = {}
+
+    # Always save event ID
+    a['run'] = arr['RunNum'].to_numpy()
+    a['lumiblock'] = arr['LumiBlockNum'].to_numpy()
+    a['evt'] = arr['EvtNum'].to_numpy()
+    # And the main analysis variable
+    a['mt'] = calculate_mt(
+        arr['JetsAK15.fCoordinates.fPt'][:, 1].to_numpy(),
+        arr['JetsAK15.fCoordinates.fEta'][:, 1].to_numpy(),
+        arr['JetsAK15.fCoordinates.fPhi'][:, 1].to_numpy(),
+        arr['JetsAK15.fCoordinates.fE'][:, 1].to_numpy(),
+        arr['MET'].to_numpy(),
+        arr['METPhi'].to_numpy(),
+        )
+    # And event weights
+    if load_mc:
+        a['weight'] = arr['Weight'].to_numpy()
+        a['puweight'] = arr['puWeight'].to_numpy()
+
+    # For everything else, we should only include the variable that was skipped
+    if skip_cut == 'metdphi':
+        a['metdphi'] = calc_dphi(arr['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy(), arr['METPhi'].to_numpy())
+    elif skip_cut == 'rt':
+        a['rt'] = np.sqrt(1.+arr['MET'].to_numpy()/arr['JetsAK15.fCoordinates.fPt'][:,1].to_numpy())
+    elif skip_cut == "highpt_muon_veto":
+        a['lead_muonpt'] = ak.fill_none(ak.firsts(arr['Muons.fCoordinates.fPt']), -1.).to_numpy()
+    elif skip_cut == "muon_veto":
+        a['nmuons'] = arr['NMuons'].to_numpy()
+    elif skip_cut == "electron_veto":
+        a['nelectrons'] = arr['NElectrons'].to_numpy()
+
+    cols.arrays = a
+    return cols
 
 def triggerstudy_columns(array, is_mc=True, single_muon_trigs=False, all_triggers=False):
     a = array.array # Just to avoid typing array.array everywhere
