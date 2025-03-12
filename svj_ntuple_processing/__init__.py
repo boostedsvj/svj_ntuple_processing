@@ -1352,6 +1352,7 @@ def nminus_one_columns(array, skip_cut, load_mc=False):
     if skip_cut == 'metdphi':
         a['metdphi'] = calc_dphi(arr['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy(), arr['METPhi'].to_numpy())
     elif skip_cut == 'rt':
+        a['met'] = arr['MET'].to_numpy()
         a['rt'] = np.sqrt(1.+arr['MET'].to_numpy()/arr['JetsAK15.fCoordinates.fPt'][:,1].to_numpy())
     elif skip_cut == "highpt_muon_veto":
         a['lead_muonpt'] = ak.fill_none(ak.firsts(arr['Muons.fCoordinates.fPt']), -1.).to_numpy()
