@@ -1347,10 +1347,6 @@ def nminus_one_columns(array, skip_cut, load_mc=False):
     if load_mc:
         a['weight'] = arr['Weight'].to_numpy()
         a['puweight'] = arr['puWeight'].to_numpy()
-    # Item required for hem_veto
-    a['ak4_subl_eta'] = arr['Jets.fCoordinates.fEta'][:,1].to_numpy()
-    a['ak4_subl_phi'] = arr['Jets.fCoordinates.fPhi'][:,1].to_numpy()
-    a['ak4_subl_pt'] = arr['Jets.fCoordinates.fPt'][:,1].to_numpy()
 
     # For everything else, we should only include the variable that was skipped
     if skip_cut == 'metdphi':
