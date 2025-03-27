@@ -639,7 +639,6 @@ def select_single_muon(array: ak.Array, cutflow: OrderedDict):
     #  see AN-19-061 section 4.2)
     # require the selected muon to match with the HLT muon object
     # (which should be saved in the SingleMuon ntuples) by ΔR < 0.2
-    array = arrays.array
     array = array[array['NMuons']>=1]
     if len(array):
             array = array[
@@ -656,8 +655,6 @@ def select_single_muon(array: ak.Array, cutflow: OrderedDict):
                 array['HLTMuonObjects.fCoordinates.fEta'][:,0].to_numpy(),
                 ) < .2]
     cutflow['nmuons=1'] = len(array)
-    array = array[array['NElectrons']==0]
-    cutflow['nelectrons=0'] = len(array)
     return array, cutflow
 
 
