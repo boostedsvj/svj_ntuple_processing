@@ -538,6 +538,10 @@ def calc_dr(eta1, phi1, eta2, phi2):
     return np.sqrt((eta1-eta2)**2 + calc_dphi(phi1, phi2)**2)
 
 
+def calc_rt(met, pt):
+    return np.sqrt(1.+ met/pt)
+
+
 def calculate_mt(pt, eta, phi, e, met, metphi):
     """
     Calculates the transverse mass MT and RT (closely related calcs)
@@ -1265,7 +1269,7 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
 
     a['rho'] = calculate_rho(a['pt'], a['eta'], a['e'])
     #a['girthddt'] = girthddt(a['mt'], a['pt'],a['rho'],a['girth'],a['weight'])
-    a['rt'] = np.sqrt(1.+a['met']/a['pt'])
+    a['rt'] = calc_rt(a['met'], a['pt'])
 
     a['leading_pt'] = arr['JetsAK15.fCoordinates.fPt'][:,0].to_numpy()
     a['leading_eta'] = arr['JetsAK15.fCoordinates.fEta'][:,0].to_numpy()
@@ -1353,7 +1357,7 @@ def nminus_one_columns(array, skip_cut, load_mc=False):
         a['metdphi'] = calc_dphi(arr['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy(), arr['METPhi'].to_numpy())
     elif skip_cut == 'rt':
         a['met'] = arr['MET'].to_numpy()
-        a['rt'] = np.sqrt(1.+arr['MET'].to_numpy()/arr['JetsAK15.fCoordinates.fPt'][:,1].to_numpy())
+        a['rt'] = calc_rt(a['met'], arr['JetsAK15.fCoordinates.fPt'][:,1].to_numpy())
     elif skip_cut == "muon_veto":
         a['nmuons'] = arr['NMuons'].to_numpy()
     elif skip_cut == "electron_veto":
