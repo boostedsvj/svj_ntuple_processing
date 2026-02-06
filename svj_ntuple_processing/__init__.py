@@ -1216,6 +1216,24 @@ def concat_columns(columns):
     return cols
 
 
+def match_gen_ecf(arr, jname, iname, gname, ecfnames, suffix):
+    jets = arr[jname]
+    genjets = arr[gname]
+    indices = arr[iname]
+    valid_match = (indices >= 0)
+    # avoid using -1 indices
+    safe_indices = ak.where(valid_match, indices, 0)
+    for ecfname in ecfnames:
+        ecf = arr[f'{gname}_{ecfname}']
+        # fill in default values for -1 indices (no match)
+        arr[f'{jname}_{ecfname}{suffix}'] = ak.where(
+            valid_match,
+            ecf[safe_indices],
+            -1
+        )
+    return arr
+
+
 def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     """
     Takes an Array object, calculates needed columns for the bdt training.
@@ -1313,6 +1331,14 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     # more branches
     a['JetsAK15_nConstituents']         = arr['JetsAK15_nConstituents'][:,1].to_numpy()
     a['JetsAK15_nConstituentsSoftDrop'] = arr['JetsAK15_nConstituentsSoftDrop'][:,1].to_numpy()
+
+    # optional gen-level ecf
+    if 'DarkJetsAK15' in arr:
+        ecfs = ['ecfN1b1', 'ecfN1b2', 'ecfN2b1', 'ecfN2b2', 'ecfN3b1', 'ecfN3b2']
+        arr = match_gen_ecf(arr, 'JetsAK15', 'JetsAK15_darkIndex', 'DarkJetsAK15', ecfs, 'dark')
+        arr = match_gen_ecf(arr, 'JetsAK15', 'JetsAK15_genIndex', 'GenJetsAK15', ecfs, 'gen')
+        a.update({ecf+'dark':arr[f'JetsAK15_{ecf}dark'] for ecf in ecfs})
+        a.update({ecf+'gen':arr[f'JetsAK15_{ecf}gen'] for ecf in ecfs})
 
     cols.arrays = a
     return cols
