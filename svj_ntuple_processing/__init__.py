@@ -1135,10 +1135,9 @@ class Columns:
                 missing_features.append(f)
         if missing_features:
             raise Exception(
-                'Cannot build numpy array.'
-                ' Available features: %s;'
-                ' Missing requested features: %s'
-                % list(self.arrays.keys()), missing_features
+                'Cannot build numpy array.\nAvailable features: {}\nMissing requested features: {}'.format(
+                        list(self.arrays.keys()), missing_features
+                    )
                 )
         X = []
         for f in features:
