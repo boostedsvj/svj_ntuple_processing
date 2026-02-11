@@ -467,6 +467,8 @@ BRANCHES_JERJEC = [
     'JetsAK15_jerFactor',
     'JetsAK15_jerFactorDown',
     'JetsAK15_jerFactorUp',
+    'JetsAK15_darkIndex',
+    'JetsAK15_genIndex',
     'GenJets.fCoordinates.fPt',
     'GenJets.fCoordinates.fEta',
     'GenJets.fCoordinates.fPhi',
@@ -479,7 +481,15 @@ BRANCHES_JERJEC = [
     'GenJetsAK15.fCoordinates.fEta',
     'GenJetsAK15.fCoordinates.fPhi',
     'GenJetsAK15.fCoordinates.fE',
+    'DarkJetsAK15.fCoordinates.fPt',
+    'DarkJetsAK15.fCoordinates.fEta',
+    'DarkJetsAK15.fCoordinates.fPhi',
+    'DarkJetsAK15.fCoordinates.fE',
     ]
+
+gen_ecfs = ['ecfN1b1', 'ecfN1b2', 'ecfN2b1', 'ecfN2b2', 'ecfN3b1', 'ecfN3b2']
+BRANCHES_JERJEC.extend([f'DarkJetsAK15_{ecf}' for ecf in gen_ecfs])
+BRANCHES_JERJEC.extend([f'GenJetsAK15_{ecf}' for ecf in gen_ecfs])
 
 def open_root(rootfile, local=False, load_hlt=False):
     """
@@ -1216,8 +1226,6 @@ def concat_columns(columns):
 
 
 def match_gen_ecf(arr, jname, iname, gname, ecfnames, suffix):
-    jets = arr[jname]
-    genjets = arr[gname]
     indices = arr[iname]
     valid_match = (indices >= 0)
     # avoid using -1 indices
@@ -1333,11 +1341,10 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
 
     # optional gen-level ecf
     if 'DarkJetsAK15.fCoordinates.fPt' in arr.fields:
-        ecfs = ['ecfN1b1', 'ecfN1b2', 'ecfN2b1', 'ecfN2b2', 'ecfN3b1', 'ecfN3b2']
-        arr = match_gen_ecf(arr, 'JetsAK15', 'JetsAK15_darkIndex', 'DarkJetsAK15', ecfs, 'dark')
-        arr = match_gen_ecf(arr, 'JetsAK15', 'JetsAK15_genIndex', 'GenJetsAK15', ecfs, 'gen')
-        a.update({ecf.lower()+'dark':arr[f'JetsAK15_{ecf}dark'] for ecf in ecfs})
-        a.update({ecf.lower()+'gen':arr[f'JetsAK15_{ecf}gen'] for ecf in ecfs})
+        arr = match_gen_ecf(arr, 'JetsAK15', 'JetsAK15_darkIndex', 'DarkJetsAK15', gen_ecfs, 'dark')
+        arr = match_gen_ecf(arr, 'JetsAK15', 'JetsAK15_genIndex', 'GenJetsAK15', gen_ecfs, 'gen')
+        a.update({ecf.lower()+'dark':arr[f'JetsAK15_{ecf}dark'][:,1].to_numpy() for ecf in gen_ecfs})
+        a.update({ecf.lower()+'gen':arr[f'JetsAK15_{ecf}gen'][:,1].to_numpy() for ecf in gen_ecfs})
 
     cols.arrays = a
     return cols
