@@ -467,6 +467,8 @@ BRANCHES_JERJEC = [
     'JetsAK15_jerFactor',
     'JetsAK15_jerFactorDown',
     'JetsAK15_jerFactorUp',
+    'JetsAK15_darkIndex',
+    'JetsAK15_genIndex',
     'GenJets.fCoordinates.fPt',
     'GenJets.fCoordinates.fEta',
     'GenJets.fCoordinates.fPhi',
@@ -479,7 +481,15 @@ BRANCHES_JERJEC = [
     'GenJetsAK15.fCoordinates.fEta',
     'GenJetsAK15.fCoordinates.fPhi',
     'GenJetsAK15.fCoordinates.fE',
+    'DarkJetsAK15.fCoordinates.fPt',
+    'DarkJetsAK15.fCoordinates.fEta',
+    'DarkJetsAK15.fCoordinates.fPhi',
+    'DarkJetsAK15.fCoordinates.fE',
     ]
+
+gen_ecfs = ['ecfN1b1', 'ecfN1b2', 'ecfN2b1', 'ecfN2b2', 'ecfN3b1', 'ecfN3b2']
+BRANCHES_JERJEC.extend([f'DarkJetsAK15_{ecf}' for ecf in gen_ecfs])
+BRANCHES_JERJEC.extend([f'GenJetsAK15_{ecf}' for ecf in gen_ecfs])
 
 def open_root(rootfile, local=False, load_hlt=False):
     """
@@ -1135,10 +1145,9 @@ class Columns:
                 missing_features.append(f)
         if missing_features:
             raise Exception(
-                'Cannot build numpy array.'
-                ' Available features: %s;'
-                ' Missing requested features: %s'
-                % list(self.arrays.keys()), missing_features
+                'Cannot build numpy array.\nAvailable features: {}\nMissing requested features: {}'.format(
+                        list(self.arrays.keys()), missing_features
+                    )
                 )
         X = []
         for f in features:
@@ -1214,6 +1223,22 @@ def concat_columns(columns):
         cols.cutflow[key] = sum(c.cutflow[key] for c in columns)
 
     return cols
+
+
+def match_gen_ecf(arr, jname, iname, gname, ecfnames, suffix):
+    indices = arr[iname]
+    valid_match = (indices >= 0)
+    # avoid using -1 indices
+    safe_indices = ak.where(valid_match, indices, 0)
+    for ecfname in ecfnames:
+        ecf = arr[f'{gname}_{ecfname}']
+        # fill in default values for -1 indices (no match)
+        arr[f'{jname}_{ecfname}{suffix}'] = ak.where(
+            valid_match,
+            ecf[safe_indices],
+            -1
+        )
+    return arr
 
 
 def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
@@ -1313,6 +1338,13 @@ def bdt_feature_columns(array, load_mc=False, save_scale_weights=False):
     # more branches
     a['JetsAK15_nConstituents']         = arr['JetsAK15_nConstituents'][:,1].to_numpy()
     a['JetsAK15_nConstituentsSoftDrop'] = arr['JetsAK15_nConstituentsSoftDrop'][:,1].to_numpy()
+
+    # optional gen-level ecf
+    if 'DarkJetsAK15.fCoordinates.fPt' in arr.fields:
+        arr = match_gen_ecf(arr, 'JetsAK15', 'JetsAK15_darkIndex', 'DarkJetsAK15', gen_ecfs, 'dark')
+        arr = match_gen_ecf(arr, 'JetsAK15', 'JetsAK15_genIndex', 'GenJetsAK15', gen_ecfs, 'gen')
+        a.update({ecf.lower()+'dark':arr[f'JetsAK15_{ecf}dark'][:,1].to_numpy() for ecf in gen_ecfs})
+        a.update({ecf.lower()+'gen':arr[f'JetsAK15_{ecf}gen'][:,1].to_numpy() for ecf in gen_ecfs})
 
     cols.arrays = a
     return cols
