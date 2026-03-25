@@ -1205,6 +1205,7 @@ def concat_columns(columns):
     # Concatenated arrays; 1 call per key
     for key in columns[0].arrays.keys():
         try:
+            print(columns[0].arrays[key])
             cols.arrays[key] = np.concatenate([c.arrays[key] for c in columns])
         except KeyError:
             # Find the column that crashed:
@@ -1373,7 +1374,7 @@ def nminus_one_columns(array, skip_cut, load_mc=False):
     a['phi'] = arr['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy()
     a['e'] = arr['JetsAK15.fCoordinates.fE'][:,1].to_numpy()
     a['met'] = arr['MET'].to_numpy(),
-    a['metphi'] = arr['METPhi'].to_numpy(),
+    a['metphi'] = arr['METPhi'].to_numpy()
 
     # And the main analysis variable
     a['mt'] = calculate_mt(a['pt'], a['eta'], a['phi'], a['e'], a['met'], a['metphi'])
