@@ -1205,7 +1205,6 @@ def concat_columns(columns):
     # Concatenated arrays; 1 call per key
     for key in columns[0].arrays.keys():
         try:
-            print(columns[0].arrays[key])
             cols.arrays[key] = np.concatenate([c.arrays[key] for c in columns])
         except KeyError:
             # Find the column that crashed:
