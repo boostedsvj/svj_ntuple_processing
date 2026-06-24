@@ -1367,15 +1367,21 @@ def nminus_one_columns(array, skip_cut, load_mc=False):
     a['run'] = arr['RunNum'].to_numpy()
     a['lumiblock'] = arr['LumiBlockNum'].to_numpy()
     a['evt'] = arr['EvtNum'].to_numpy()
+    # And the kinematics of the main variable
+    a['pt'] = arr['JetsAK15.fCoordinates.fPt'][:,1].to_numpy()
+    a['eta'] = arr['JetsAK15.fCoordinates.fEta'][:,1].to_numpy()
+    a['phi'] = arr['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy()
+    a['e'] = arr['JetsAK15.fCoordinates.fE'][:,1].to_numpy()
+    a['met'] = arr['MET'].to_numpy()
+    a['metphi'] = arr['METPhi'].to_numpy()
+    a['rt'] = calc_rt(a['met'], arr['JetsAK15.fCoordinates.fPt'][:,1].to_numpy())
+
     # And the main analysis variable
-    a['mt'] = calculate_mt(
-        arr['JetsAK15.fCoordinates.fPt'][:, 1].to_numpy(),
-        arr['JetsAK15.fCoordinates.fEta'][:, 1].to_numpy(),
-        arr['JetsAK15.fCoordinates.fPhi'][:, 1].to_numpy(),
-        arr['JetsAK15.fCoordinates.fE'][:, 1].to_numpy(),
-        arr['MET'].to_numpy(),
-        arr['METPhi'].to_numpy(),
-        )
+    a['mt'] = calculate_mt(a['pt'], a['eta'], a['phi'], a['e'], a['met'], a['metphi'])
+
+    # And the main cutbased descriminator
+    a['ecfm2b1'] = arr['JetsAK15_ecfM2b1'][:,1].to_numpy()
+
     # And event weights
     if load_mc:
         a['weight'] = arr['Weight'].to_numpy()
@@ -1384,9 +1390,6 @@ def nminus_one_columns(array, skip_cut, load_mc=False):
     # For everything else, we should only include the variable that was skipped
     if skip_cut == 'metdphi':
         a['metdphi'] = calc_dphi(arr['JetsAK15.fCoordinates.fPhi'][:,1].to_numpy(), arr['METPhi'].to_numpy())
-    elif skip_cut == 'rt':
-        a['met'] = arr['MET'].to_numpy()
-        a['rt'] = calc_rt(a['met'], arr['JetsAK15.fCoordinates.fPt'][:,1].to_numpy())
     elif skip_cut == "muon_veto":
         a['nmuons'] = arr['NMuons'].to_numpy()
     elif skip_cut == "electron_veto":
